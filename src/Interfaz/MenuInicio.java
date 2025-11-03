@@ -19,8 +19,8 @@ import java.io.IOException;
 public class MenuInicio extends JFrame {
 
     // ===== Recursos en el CLASSPATH (pon las imágenes en src/Interfaz/Imagenes/) =====
-    private static final String RECURSO_FONDO_AUTENTICACION = "/Interfaz/Imagenes/Fondo_Login.jpg";
-    private static final String RECURSO_FONDO_MENU          = "/Interfaz/Imagenes/Fondo_Menu.jpg";
+    private static final String RECURSO_FONDO_AUTENTICACION = "/Interfaz/Imagenes/Fondo_Login.png";
+    private static final String RECURSO_FONDO_MENU          = "/Interfaz/Imagenes/Fondo_Menu.png";
     // ==================================================================================
 
     private final GestorUsuarios gestorUsuarios;
