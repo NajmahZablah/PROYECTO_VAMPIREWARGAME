@@ -336,13 +336,11 @@ public class MenuInicio extends JFrame {
 
     private void iniciarPartida() {
         if (usuarioEnSesion == null) {
-            JOptionPane.showMessageDialog(this, "Inicia sesión primero.", "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        JOptionPane.showMessageDialog(this,
-                "Iniciando partida con: " + usuarioEnSesion.getNombreUsuario(),
-                "Jugar", JOptionPane.INFORMATION_MESSAGE);
-        // Próximo paso: abrir VentanaJuego y conectar con Juego/Tablero.
+        JOptionPane.showMessageDialog(this, "Inicia sesión primero.", "Aviso", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    VentanaJuego v = new VentanaJuego(); // luego le pasamos Juego/Usuario
+    v.setVisible(true);
     }
 
     private void mostrarEstadoCuenta() {
