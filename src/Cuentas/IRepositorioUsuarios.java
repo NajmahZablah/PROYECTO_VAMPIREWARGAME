@@ -11,8 +11,15 @@ import java.util.List;
  * @author najma
  */
 public interface IRepositorioUsuarios {
-
-    boolean agregarUsuario(Usuario nuevoUsuario);
+    // Usuarios
+    List<Usuario> cargarTodos();
+    void guardarTodos(List<Usuario> usuarios);
     Usuario buscarPorNombre(String nombreUsuario);
-    List<Usuario> listarUsuarios();
+    void agregar(Usuario usuario);
+    void actualizar(Usuario usuario);
+    void eliminar(String nombreUsuario);
+
+    // Logs
+    void anexarLog(String nombreUsuario, String linea);
+    List<String> leerLogs(String nombreUsuario, int maxLineas);
 }
