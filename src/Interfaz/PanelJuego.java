@@ -4,187 +4,308 @@
  */
 package Interfaz;
 
+import Modelo.ColorJugador;
+import Modelo.TipoPieza;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.net.URL;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
+
 
 /**
  *
  * @author najma
  */
+/* ============================================================================
+   ARCHIVO: PanelJuego.java
+   HUD con botón de libro (stats), cronómetro y carga de imágenes reales
+   ============================================================================ */
 public class PanelJuego extends JPanel {
+    private final PanelTablero tablero;
+    private final Map<String, BufferedImage> imagenes = new HashMap<>();
+    
+    private JButton btnGirarNegro, btnGirarBlanco, btnRetirar, btnLibro;
+    private JLabel lblNombreNegro, lblNombreBlanco;
+    private JLabel lblIntentosNegro, lblIntentosBlanco;
+    private JLabel lblEstadoNegro, lblEstadoBlanco;
+    private JLabel lblCronometro;
+    
+    private Timer cronometro;
+    private int segundos = 0;
+    private BufferedImage imgLibro, imgFichaStats;
 
-    // Rutas (ajusta si tus archivos se llaman distinto)
-    private static final String RUTA_LIBRO = "/Interfaz/Imagenes/Libro.png";
-    private static final String RUTA_STATS = "/Interfaz/Imagenes/Ficha_Stats.jpg";
-
-    private final JLabel lblTiempo = new JLabel("00:00");
-    private final JLabel lblNegro  = new JLabel("Negras");
-    private final JLabel lblBlanco = new JLabel("Blancas");
-    private final JButton btnLibro = new JButton();
-
-    // Cronómetro
-    private Timer timer;
-    private long inicioMs;
-
-    // Imagen stats
-    private BufferedImage imgStats;
-
-    public PanelJuego(JComponent tablero, String nombreNegras, String nombreBlancas) {
+    public PanelJuego(PanelTablero tablero) {
+        this.tablero = tablero;
         setLayout(new BorderLayout());
-        setOpaque(false);
+        setBackground(new Color(15, 15, 25));
 
-        // Encabezado (cronómetro + nombres)
-        JPanel top = new JPanel(new BorderLayout());
-        top.setOpaque(false);
+        cargarImagenes();
 
-        lblTiempo.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblTiempo.setForeground(Color.WHITE);
-        lblTiempo.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+        // Panel superior (Jugador Negro)
+        JPanel panelNegro = crearPanelJugador(ColorJugador.NEGRO);
+        add(panelNegro, BorderLayout.NORTH);
 
-        lblNegro.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblNegro.setForeground(Color.WHITE);
-        lblNegro.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
-
-        lblBlanco.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblBlanco.setForeground(Color.WHITE);
-        lblBlanco.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
-
-        top.add(lblTiempo, BorderLayout.WEST);
-        top.add(lblNegro,  BorderLayout.CENTER);
-        top.add(lblBlanco, BorderLayout.EAST);
-
-        // Fondo semitransparente para legibilidad
-        JPanel topWrap = new JPanel(new BorderLayout()) {
-            @Override protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.setColor(new Color(0, 0, 0, 110));
-                g.fillRect(0, 0, getWidth(), getHeight());
-            }
-        };
-        topWrap.setOpaque(false);
-        topWrap.add(top, BorderLayout.CENTER);
-
-        add(topWrap, BorderLayout.NORTH);
-
-        // Centro: tablero (inyectado)
+        // Centro: Tablero
         add(tablero, BorderLayout.CENTER);
 
-        // Botón del libro (abajo-derecha)
-        JPanel bottomRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 12)) {
-            @Override protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.setColor(new Color(0, 0, 0, 80));
-                g.fillRect(0, 0, getWidth(), getHeight());
-            }
-        };
-        bottomRight.setOpaque(false);
+        // Panel inferior (Jugador Blanco)
+        JPanel panelBlanco = crearPanelJugador(ColorJugador.BLANCO);
+        add(panelBlanco, BorderLayout.SOUTH);
 
-        configurarBotonLibro();
-        bottomRight.add(btnLibro);
-        add(bottomRight, BorderLayout.SOUTH);
-
-        setNombres(nombreNegras, nombreBlancas);
-        cargarImagenStats();
+        // Panel derecho: Cronómetro, Libro y Retirar
+        JPanel panelDerecha = crearPanelDerecha();
+        add(panelDerecha, BorderLayout.EAST);
+        
+        // Iniciar cronómetro
         iniciarCronometro();
     }
 
-    private void configurarBotonLibro() {
-        btnLibro.setFocusPainted(false);
-        btnLibro.setBorderPainted(false);
-        btnLibro.setContentAreaFilled(false);
-        btnLibro.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnLibro.setToolTipText("Ver estadísticas de piezas");
+    private JPanel crearPanelJugador(ColorJugador color) {
+        JPanel panel = new JPanel();
+        panel.setBackground(color == ColorJugador.NEGRO ? 
+            new Color(30, 30, 40) : 
+            new Color(40, 40, 55));
+        panel.setPreferredSize(new Dimension(0, 100));
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 30, 15));
 
-        // Icono del libro (si no existe, se deja texto 📖)
-        try {
-            URL u = getClass().getResource(RUTA_LIBRO);
-            if (u != null) {
-                Image img = ImageIO.read(u);
-                btnLibro.setIcon(new ImageIcon(img.getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
-            } else {
-                btnLibro.setText("📖");
-            }
-        } catch (Exception e) {
-            btnLibro.setText("📖");
+        JLabel lblNombre = new JLabel("Jugador");
+        lblNombre.setFont(new Font("Arial", Font.BOLD, 20));
+        lblNombre.setForeground(color == ColorJugador.NEGRO ? 
+            Color.LIGHT_GRAY : 
+            new Color(220, 220, 255));
+        
+        JButton btnGirar = new JButton("🎰 GIRAR RULETA");
+        btnGirar.setFont(new Font("Arial", Font.BOLD, 16));
+        btnGirar.setBackground(new Color(60, 100, 180));
+        btnGirar.setForeground(Color.WHITE);
+        btnGirar.setFocusPainted(false);
+        btnGirar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        JLabel lblIntentos = new JLabel("Intentos: 1/1");
+        lblIntentos.setFont(new Font("Arial", Font.BOLD, 15));
+        lblIntentos.setForeground(new Color(255, 215, 0));
+        
+        JLabel lblEstado = new JLabel("Piezas: 6");
+        lblEstado.setFont(new Font("Arial", Font.PLAIN, 14));
+        lblEstado.setForeground(new Color(150, 200, 150));
+
+        panel.add(lblNombre);
+        panel.add(btnGirar);
+        panel.add(lblIntentos);
+        panel.add(lblEstado);
+
+        if (color == ColorJugador.NEGRO) {
+            lblNombreNegro = lblNombre;
+            btnGirarNegro = btnGirar;
+            lblIntentosNegro = lblIntentos;
+            lblEstadoNegro = lblEstado;
+        } else {
+            lblNombreBlanco = lblNombre;
+            btnGirarBlanco = btnGirar;
+            lblIntentosBlanco = lblIntentos;
+            lblEstadoBlanco = lblEstado;
         }
 
-        btnLibro.addActionListener(e -> mostrarStats());
+        return panel;
     }
 
-    private void cargarImagenStats() {
-        try {
-            URL u = getClass().getResource(RUTA_STATS);
-            if (u != null) {
-                imgStats = ImageIO.read(u);
+    private JPanel crearPanelDerecha() {
+        JPanel panel = new JPanel();
+        panel.setBackground(new Color(15, 15, 25));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.setPreferredSize(new Dimension(200, 0));
+        
+        // Cronómetro
+        lblCronometro = new JLabel("⏱ 00:00");
+        lblCronometro.setFont(new Font("Monospaced", Font.BOLD, 24));
+        lblCronometro.setForeground(new Color(100, 255, 100));
+        lblCronometro.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        // Botón Retirar
+        btnRetirar = new JButton("RETIRAR");
+        btnRetirar.setFont(new Font("Arial", Font.BOLD, 18));
+        btnRetirar.setForeground(Color.WHITE);
+        btnRetirar.setBackground(new Color(180, 30, 30));
+        btnRetirar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnRetirar.setMaximumSize(new Dimension(150, 50));
+        btnRetirar.setFocusPainted(false);
+        
+        // Botón Libro (Stats)
+        btnLibro = new JButton();
+        if (imgLibro != null) {
+            Image scaled = imgLibro.getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+            btnLibro.setIcon(new ImageIcon(scaled));
+        } else {
+            btnLibro.setText("📖");
+            btnLibro.setFont(new Font("Arial", Font.PLAIN, 48));
+        }
+        btnLibro.setPreferredSize(new Dimension(100, 100));
+        btnLibro.setMaximumSize(new Dimension(100, 100));
+        btnLibro.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnLibro.setContentAreaFilled(false);
+        btnLibro.setBorderPainted(false);
+        btnLibro.setFocusPainted(false);
+        btnLibro.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLibro.setToolTipText("Ver Estadísticas de Piezas");
+        
+        btnLibro.addActionListener(e -> mostrarFichaStats());
+        
+        panel.add(Box.createVerticalGlue());
+        panel.add(lblCronometro);
+        panel.add(Box.createRigidArea(new Dimension(0, 30)));
+        panel.add(btnRetirar);
+        panel.add(Box.createVerticalGlue());
+        panel.add(btnLibro);
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
+        
+        return panel;
+    }
+
+    private void cargarImagenes() {
+        // Cargar imágenes de piezas
+        String[] tipos = {"hl", "vampiro", "muerte", "zombie"};
+        String[] colores = {"blanco", "negro"};
+        
+        for (String tipo : tipos) {
+            for (String color : colores) {
+                try {
+                    String ruta = "Interfaz/Imagenes/" + tipo + "_" + color + ".png";
+                    BufferedImage img = ImageIO.read(new File(ruta));
+                    
+                    // Mapear a los nombres de TipoPieza
+                    String keyTipo = tipo.equals("hl") ? "HOMBRE_LOBO" :
+                                   tipo.equals("vampiro") ? "VAMPIRO" :
+                                   tipo.equals("muerte") ? "NIGROMANTE" : "ZOMBIE";
+                    String keyColor = color.toUpperCase();
+                    
+                    imagenes.put(keyTipo + "_" + keyColor, img);
+                } catch (Exception e) {
+                    System.err.println("No se pudo cargar imagen: " + tipo + "_" + color + ".png - " + e.getMessage());
+                }
             }
-        } catch (Exception ignored) {}
+        }
+        
+        // Cargar libro y ficha de stats
+        try {
+            imgLibro = ImageIO.read(new File("Interfaz/Imagenes/Libro.png"));
+        } catch (Exception e) {
+            System.err.println("No se pudo cargar Libro.png: " + e.getMessage());
+        }
+        
+        try {
+            imgFichaStats = ImageIO.read(new File("Interfaz/Imagenes/Ficha_Stats.jpg"));
+        } catch (Exception e) {
+            System.err.println("No se pudo cargar Ficha_Stats.jpg: " + e.getMessage());
+        }
     }
 
-    private void mostrarStats() {
-        if (imgStats == null) {
-            JOptionPane.showMessageDialog(this,
-                    "Agrega tu imagen de stats en: " + RUTA_STATS,
-                    "Imagen no encontrada", JOptionPane.INFORMATION_MESSAGE);
+    private void mostrarFichaStats() {
+        if (imgFichaStats == null) {
+            JOptionPane.showMessageDialog(this, 
+                "No se pudo cargar la imagen de estadísticas",
+                "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        // Escalar imagen a un tamaño más pequeño (por ejemplo, 60% del tamaño original)
-        int ancho = imgStats.getWidth() / 2;
-        int alto  = imgStats.getHeight() / 2;
-        Image imgEscalada = imgStats.getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);
-
-        // Crear etiqueta centrada con la imagen
-        JLabel lbl = new JLabel(new ImageIcon(imgEscalada));
-        lbl.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl.setVerticalAlignment(SwingConstants.CENTER);
-        lbl.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        // Crear panel contenedor centrado con fondo semitransparente opcional
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(0, 0, 0, 200));
-        panel.add(lbl);
-
-        // Mostrar en un diálogo centrado
-        JOptionPane.showMessageDialog(
-                this,
-                panel,
-                "Estadísticas de Piezas",
-                JOptionPane.PLAIN_MESSAGE
-        );
+        
+        // Crear diálogo centrado con la imagen
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), 
+            "Estadísticas de Piezas", true);
+        dialog.setLayout(new BorderLayout());
+        
+        // Escalar imagen para que quepa bien
+        int maxWidth = 800;
+        int maxHeight = 600;
+        Image scaled = imgFichaStats.getScaledInstance(maxWidth, maxHeight, Image.SCALE_SMOOTH);
+        JLabel lblImagen = new JLabel(new ImageIcon(scaled));
+        lblImagen.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+        
+        dialog.add(lblImagen, BorderLayout.CENTER);
+        
+        JButton btnCerrar = new JButton("Cerrar");
+        btnCerrar.setFont(new Font("Arial", Font.BOLD, 14));
+        btnCerrar.addActionListener(e -> dialog.dispose());
+        
+        JPanel panelBoton = new JPanel();
+        panelBoton.add(btnCerrar);
+        dialog.add(panelBoton, BorderLayout.SOUTH);
+        
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
 
-
-    // ===== Cronómetro =====
     private void iniciarCronometro() {
-        inicioMs = System.currentTimeMillis();
-        timer = new Timer(1000, e -> actualizarTiempo());
-        timer.start();
-        actualizarTiempo();
+        cronometro = new Timer(1000, e -> {
+            segundos++;
+            int mins = segundos / 60;
+            int secs = segundos % 60;
+            lblCronometro.setText(String.format("⏱ %02d:%02d", mins, secs));
+        });
+        cronometro.start();
     }
 
-    public void detenerCronometro() { if (timer != null) timer.stop(); }
-
-    private void actualizarTiempo() {
-        long trans = (System.currentTimeMillis() - inicioMs) / 1000L;
-        long min = trans / 60L;
-        long seg = trans % 60L;
-        lblTiempo.setText(String.format("%02d:%02d", min, seg));
+    public void detenerCronometro() {
+        if (cronometro != null) {
+            cronometro.stop();
+        }
     }
 
-    // ===== API pública =====
-    public void setNombres(String negras, String blancas) {
-        lblNegro.setText(negras != null ? negras : "Negras");
-        lblBlanco.setText(blancas != null ? blancas : "Blancas");
+    public BufferedImage imagen(TipoPieza tipo, ColorJugador color) {
+        String key = tipo.name() + "_" + color.name();
+        return imagenes.get(key);
     }
 
-    /** Permite enganchar comportamientos al botón del libro si lo necesitas. */
-    public void setAccionLibro(ActionListener l) {
-        for (var ls : btnLibro.getActionListeners()) btnLibro.removeActionListener(ls);
-        configurarBotonLibro(); // vuelve a poner el default (mostrarStats)
-        btnLibro.addActionListener(l);
+    public void setNombres(String nombreNegro, String nombreBlanco) {
+        lblNombreNegro.setText(nombreNegro);
+        lblNombreBlanco.setText(nombreBlanco);
+    }
+
+    public void onGirarNegro(ActionListener listener) {
+        btnGirarNegro.addActionListener(listener);
+    }
+
+    public void onGirarBlanco(ActionListener listener) {
+        btnGirarBlanco.addActionListener(listener);
+    }
+
+    public void onRetirar(ActionListener listener) {
+        btnRetirar.addActionListener(listener);
+    }
+
+    public void habilitarGiro(ColorJugador turno, boolean enabled) {
+        if (turno == ColorJugador.NEGRO) {
+            btnGirarNegro.setEnabled(enabled);
+            btnGirarBlanco.setEnabled(false);
+            btnGirarNegro.setBackground(enabled ? new Color(60, 100, 180) : Color.GRAY);
+        } else {
+            btnGirarBlanco.setEnabled(enabled);
+            btnGirarNegro.setEnabled(false);
+            btnGirarBlanco.setBackground(enabled ? new Color(60, 100, 180) : Color.GRAY);
+        }
+    }
+
+    public void setIntentos(ColorJugador color, int restantes, int total) {
+        String texto = String.format("Intentos: %d/%d", restantes, total);
+        if (color == ColorJugador.NEGRO) {
+            lblIntentosNegro.setText(texto);
+        } else {
+            lblIntentosBlanco.setText(texto);
+        }
+    }
+
+    public void setPiezasRestantes(ColorJugador color, int cantidad) {
+        String texto = String.format("Piezas: %d", cantidad);
+        if (color == ColorJugador.NEGRO) {
+            lblEstadoNegro.setText(texto);
+        } else {
+            lblEstadoBlanco.setText(texto);
+        }
     }
 }

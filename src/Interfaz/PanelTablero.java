@@ -4,46 +4,153 @@
  */
 package Interfaz;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 /**
  *
  * @author najma
  */
+/* ============================================================================
+   ARCHIVO: PanelTablero.java
+   Tablero 6x6 con fondo de imagen y transparencia
+   ============================================================================ */
 public class PanelTablero extends JPanel {
 
-    private boolean bloqueado = false;
-
-    public PanelTablero() {
-        setPreferredSize(new Dimension(900, 600));
+    public interface ClickListener {
+        void onCeldaClick(int fila, int col);
     }
 
-    public void setBloqueado(boolean b) { bloqueado = b; repaint(); }
+    private static final int N = 6;
+    private final BufferedImage[][] piezas = new BufferedImage[N][N];
+    private final Set<Point> highlights = new HashSet<>();
+    private BufferedImage fondoTablero;
+    private int side;
+    private int offX, offY;
+    private ClickListener clickListener;
 
-    @Override
+    public PanelTablero() {
+        setOpaque(false);
+        setPreferredSize(new Dimension(880, 880));
+        
+        // Cargar imagen de fondo
+        try {
+            fondoTablero = ImageIO.read(new File("Interfaz/Imagenes/tablero_fondo.png"));
+        } catch (Exception e) {
+            System.err.println("No se pudo cargar tablero_fondo.png: " + e.getMessage());
+        }
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Point cell = cellFromPixel(e.getPoint());
+                if (cell != null && clickListener != null) {
+                    clickListener.onCeldaClick(cell.y, cell.x);
+                }
+            }
+        });
+    }
+
+    public void setOnClick(ClickListener l) { 
+        this.clickListener = l; 
+    }
+
+    public void setPieza(int fila, int col, BufferedImage img) {
+        piezas[fila][col] = img;
+        repaint();
+    }
+
+    public void limpiarPiezas() {
+        for (int r = 0; r < N; r++) {
+            for (int c = 0; c < N; c++) {
+                piezas[r][c] = null;
+            }
+        }
+        repaint();
+    }
+
+    public void setHighlights(Set<Point> hs) {
+        highlights.clear();
+        if (hs != null) highlights.addAll(hs);
+        repaint();
+    }
+
+    private void recomputeGeometry() {
+        int cw = getWidth() / N;
+        int ch = getHeight() / N;
+        side = Math.min(cw, ch);
+        int tabW = side * N, tabH = side * N;
+        offX = (getWidth() - tabW) / 2;
+        offY = (getHeight() - tabH) / 2;
+    }
+
+    private Point cellFromPixel(Point p) {
+        recomputeGeometry();
+        int x = p.x - offX, y = p.y - offY;
+        if (x < 0 || y < 0) return null;
+        int col = x / side, fila = y / side;
+        if (col < 0 || col >= N || fila < 0 || fila >= N) return null;
+        return new Point(col, fila);
+    }
+
+    @Override 
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        recomputeGeometry();
 
-        // Fondo “oscuro” para que combine con tu arte
-        g.setColor(new Color(10, 10, 20));
-        g.fillRect(0, 0, getWidth(), getHeight());
+        // Dibujar fondo de imagen
+        if (fondoTablero != null) {
+            g2.drawImage(fondoTablero, 0, 0, getWidth(), getHeight(), null);
+        }
 
-        // Tablero 6x6
-        int filas = 6, cols = 6;
-        int cw = getWidth() / cols;
-        int ch = getHeight() / filas;
-
-        for (int r = 0; r < filas; r++) {
-            for (int c = 0; c < cols; c++) {
+        // Tablero con opacidad (para ver el fondo)
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
+        
+        // Casillas alternadas
+        for (int r = 0; r < N; r++) {
+            for (int c = 0; c < N; c++) {
                 boolean oscuro = (r + c) % 2 == 0;
-                g.setColor(oscuro ? new Color(25,35,65,220) : new Color(210,220,235,180));
-                g.fillRect(c * cw, r * ch, cw, ch);
+                g2.setColor(oscuro ? 
+                    new Color(30, 40, 70, 180) : 
+                    new Color(200, 210, 230, 180));
+                g2.fillRect(offX + c * side, offY + r * side, side, side);
             }
         }
 
-        if (bloqueado) {
-            g.setColor(new Color(0,0,0,80));
-            g.fillRect(0,0,getWidth(),getHeight());
+        // Restaurar opacidad completa
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+
+        // Highlights
+        g2.setStroke(new BasicStroke(4f));
+        for (Point p : highlights) {
+            int x = offX + p.x * side, y = offY + p.y * side;
+            g2.setColor(new Color(255, 215, 0, 140));
+            g2.fillRect(x, y, side, side);
+            g2.setColor(new Color(255, 215, 0, 220));
+            g2.drawRect(x, y, side, side);
         }
+
+        // Piezas escaladas
+        for (int r = 0; r < N; r++) {
+            for (int c = 0; c < N; c++) {
+                BufferedImage img = piezas[r][c];
+                if (img != null) {
+                    int margin = (int) (side * 0.08);
+                    Image esc = img.getScaledInstance(side - 2 * margin, side - 2 * margin, Image.SCALE_SMOOTH);
+                    g2.drawImage(esc, offX + c * side + margin, offY + r * side + margin, null);
+                }
+            }
+        }
+        
+        g2.dispose();
     }
 }
