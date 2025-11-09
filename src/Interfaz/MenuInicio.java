@@ -18,10 +18,6 @@ import java.io.File;
  *
  * @author najma
  */
-/* ============================================================================
-   ARCHIVO 1: MenuInicio.java
-   Maneja LOGIN y CREAR PLAYER
-   ============================================================================ */
 public class MenuInicio extends JFrame {
     
     private final GestorUsuarios gestorUsuarios;
@@ -32,7 +28,7 @@ public class MenuInicio extends JFrame {
         this.gestorUsuarios = gestor;
         
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(600, 500);
+        setSize(1000, 650);
         setLocationRelativeTo(null);
         setResizable(false);
         
@@ -62,8 +58,8 @@ public class MenuInicio extends JFrame {
                 } else {
                     Graphics2D g2 = (Graphics2D) g;
                     GradientPaint gradient = new GradientPaint(
-                        0, 0, new Color(15, 20, 40),
-                        0, getHeight(), new Color(40, 50, 90)
+                        0, 0, new Color(15, 25, 45),
+                        0, getHeight(), new Color(35, 50, 85)
                     );
                     g2.setPaint(gradient);
                     g2.fillRect(0, 0, getWidth(), getHeight());
@@ -73,49 +69,47 @@ public class MenuInicio extends JFrame {
         
         panelPrincipal.setLayout(null);
         
-        // Título
-        JLabel lblTitulo = new JLabel("Vampire Wargame");
-        lblTitulo.setFont(new Font("Serif", Font.BOLD, 42));
-        lblTitulo.setForeground(new Color(220, 220, 255));
-        lblTitulo.setBounds(100, 40, 400, 50);
-        lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
+        // Título centrado arriba
+        JLabel lblTitulo = new JLabel("Vampire Wargame", SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Serif", Font.BOLD, 56));
+        lblTitulo.setForeground(new Color(240, 240, 255));
+        lblTitulo.setBounds(200, 70, 600, 70);
         panelPrincipal.add(lblTitulo);
         
         // Subtítulo
-        JLabel lblSubtitulo = new JLabel("Sistema de Autenticación");
-        lblSubtitulo.setFont(new Font("Arial", Font.PLAIN, 16));
-        lblSubtitulo.setForeground(new Color(180, 180, 200));
-        lblSubtitulo.setBounds(100, 95, 400, 20);
-        lblSubtitulo.setHorizontalAlignment(SwingConstants.CENTER);
+        JLabel lblSubtitulo = new JLabel("Sistema de Autenticación", SwingConstants.CENTER);
+        lblSubtitulo.setFont(new Font("Arial", Font.PLAIN, 20));
+        lblSubtitulo.setForeground(new Color(180, 190, 210));
+        lblSubtitulo.setBounds(200, 145, 600, 30);
         panelPrincipal.add(lblSubtitulo);
         
-        // Botones
-        int botonWidth = 300;
-        int botonHeight = 60;
-        int xCentro = (600 - botonWidth) / 2;
+        // Botones a la IZQUIERDA
+        int botonWidth = 430;
+        int botonHeight = 70;
+        int xIzquierda = 40; // Posición a la izquierda
         
-        JButton btnLogin = crearBoton("LOG IN", new Color(60, 100, 180));
-        btnLogin.setBounds(xCentro, 180, botonWidth, botonHeight);
+        JButton btnLogin = crearBotonAzul("LOG IN");
+        btnLogin.setBounds(xIzquierda, 280, botonWidth, botonHeight);
         btnLogin.addActionListener(e -> abrirLogin());
         panelPrincipal.add(btnLogin);
         
-        JButton btnCrear = crearBoton("CREAR PLAYER", new Color(80, 140, 100));
-        btnCrear.setBounds(xCentro, 260, botonWidth, botonHeight);
+        JButton btnCrear = crearBotonAzul("CREAR PLAYER");
+        btnCrear.setBounds(xIzquierda, 370, botonWidth, botonHeight);
         btnCrear.addActionListener(e -> abrirCrearPlayer());
         panelPrincipal.add(btnCrear);
         
-        JButton btnSalir = crearBoton("SALIR", new Color(150, 60, 60));
-        btnSalir.setBounds(xCentro, 340, botonWidth, botonHeight);
+        JButton btnSalir = crearBotonRojo("SALIR");
+        btnSalir.setBounds(xIzquierda, 460, botonWidth, botonHeight);
         btnSalir.addActionListener(e -> System.exit(0));
         panelPrincipal.add(btnSalir);
         
         setContentPane(panelPrincipal);
     }
     
-    private JButton crearBoton(String texto, Color colorFondo) {
+    private JButton crearBotonAzul(String texto) {
         JButton btn = new JButton(texto);
-        btn.setFont(new Font("Arial", Font.BOLD, 18));
-        btn.setBackground(colorFondo);
+        btn.setFont(new Font("Arial", Font.BOLD, 22));
+        btn.setBackground(new Color(50, 80, 140));
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
@@ -123,141 +117,278 @@ public class MenuInicio extends JFrame {
         
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btn.setBackground(colorFondo.brighter());
+                btn.setBackground(new Color(70, 100, 170));
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                btn.setBackground(colorFondo);
+                btn.setBackground(new Color(50, 80, 140));
             }
         });
         
         return btn;
     }
     
-    /* ==================== LOG IN ==================== */
+    private JButton crearBotonRojo(String texto) {
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("Arial", Font.BOLD, 22));
+        btn.setBackground(new Color(140, 50, 50));
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btn.setBackground(new Color(170, 70, 70));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btn.setBackground(new Color(140, 50, 50));
+            }
+        });
+        
+        return btn;
+    }
+    
+    /* ==================== LOG IN CON FONDO OPACO Y MOSTRAR PASSWORD ==================== */
     
     private void abrirLogin() {
-        JTextField txtUsuario = new JTextField(20);
-        JPasswordField txtPassword = new JPasswordField(20);
+        // Crear diálogo con fondo opaco
+        JDialog dialogo = new JDialog(this, "Iniciar Sesión", true);
+        dialogo.setSize(520, 320);
+        dialogo.setLocationRelativeTo(this);
+        dialogo.setUndecorated(true);
         
-        JPanel panel = new JPanel(new GridLayout(2, 2, 10, 10));
-        panel.add(new JLabel("Usuario:"));
-        panel.add(txtUsuario);
-        panel.add(new JLabel("Password:"));
-        panel.add(txtPassword);
+        // Panel con fondo semi-transparente
+        JPanel panelContenido = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setColor(new Color(30, 40, 60, 230)); // Semi-transparente
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+            }
+        };
+        panelContenido.setOpaque(false);
+        panelContenido.setLayout(null);
+        panelContenido.setBorder(BorderFactory.createLineBorder(new Color(100, 120, 180), 2));
         
-        int resultado = JOptionPane.showConfirmDialog(this, panel, 
-            "Iniciar Sesión", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        JLabel lblTitulo = new JLabel("Iniciar Sesión", SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 26));
+        lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setBounds(0, 25, 520, 35);
+        panelContenido.add(lblTitulo);
         
-        if (resultado == JOptionPane.OK_OPTION) {
+        JLabel lblUsuario = new JLabel("Usuario:");
+        lblUsuario.setFont(new Font("Arial", Font.BOLD, 16));
+        lblUsuario.setForeground(Color.WHITE);
+        lblUsuario.setBounds(60, 90, 100, 30);
+        panelContenido.add(lblUsuario);
+        
+        JTextField txtUsuario = new JTextField();
+        txtUsuario.setFont(new Font("Arial", Font.PLAIN, 15));
+        txtUsuario.setBounds(170, 90, 290, 35);
+        panelContenido.add(txtUsuario);
+        
+        JLabel lblPassword = new JLabel("Password:");
+        lblPassword.setFont(new Font("Arial", Font.BOLD, 16));
+        lblPassword.setForeground(Color.WHITE);
+        lblPassword.setBounds(60, 145, 100, 30);
+        panelContenido.add(lblPassword);
+        
+        JPasswordField txtPassword = new JPasswordField();
+        txtPassword.setFont(new Font("Arial", Font.PLAIN, 15));
+        txtPassword.setBounds(170, 145, 290, 35);
+        panelContenido.add(txtPassword);
+        
+        // Checkbox para mostrar contraseña
+        JCheckBox chkMostrar = new JCheckBox("Mostrar");
+        chkMostrar.setFont(new Font("Arial", Font.PLAIN, 13));
+        chkMostrar.setForeground(Color.WHITE);
+        chkMostrar.setOpaque(false);
+        chkMostrar.setFocusPainted(false);
+        chkMostrar.setBounds(170, 185, 100, 25);
+        chkMostrar.addActionListener(e -> {
+            if (chkMostrar.isSelected()) {
+                txtPassword.setEchoChar((char) 0);
+            } else {
+                txtPassword.setEchoChar('•');
+            }
+        });
+        panelContenido.add(chkMostrar);
+        
+        // Botones
+        JButton btnOk = crearBotonAzul("OK");
+        btnOk.setBounds(100, 235, 130, 45);
+        btnOk.addActionListener(e -> {
             String usuario = txtUsuario.getText().trim();
             String password = new String(txtPassword.getPassword());
             
             if (usuario.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(this, 
-                    "Debes completar todos los campos", 
+                JOptionPane.showMessageDialog(dialogo, "Completa todos los campos", 
                     "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
             Usuario usuarioLogueado = gestorUsuarios.iniciarSesion(usuario, password);
-            
             if (usuarioLogueado != null) {
-                JOptionPane.showMessageDialog(this, 
-                    "¡Bienvenido " + usuarioLogueado.getNombreUsuario() + "!", 
-                    "Inicio Exitoso", JOptionPane.INFORMATION_MESSAGE);
-                
-                // Abrir menú principal
+                dialogo.dispose();
                 MenuPrincipal.mostrar(usuarioLogueado, gestorUsuarios);
                 dispose();
             } else {
-                JOptionPane.showMessageDialog(this, 
-                    "Usuario o contraseña incorrectos.\n" +
-                    "Verifica que la cuenta esté activa.", 
+                JOptionPane.showMessageDialog(dialogo, 
+                    "Usuario o contraseña incorrectos", 
                     "Error de Autenticación", JOptionPane.ERROR_MESSAGE);
             }
-        }
+        });
+        panelContenido.add(btnOk);
+        
+        JButton btnCancelar = crearBotonRojo("Cancelar");
+        btnCancelar.setBounds(290, 235, 130, 45);
+        btnCancelar.addActionListener(e -> dialogo.dispose());
+        panelContenido.add(btnCancelar);
+        
+        dialogo.setContentPane(panelContenido);
+        dialogo.setVisible(true);
     }
     
-    /* ==================== CREAR PLAYER ==================== */
+    /* ==================== CREAR PLAYER CON FONDO OPACO Y MOSTRAR PASSWORD ==================== */
     
     private void abrirCrearPlayer() {
-        JTextField txtUsuario = new JTextField(20);
-        JPasswordField txtPassword = new JPasswordField(20);
-        JPasswordField txtConfirmar = new JPasswordField(20);
+        JDialog dialogo = new JDialog(this, "Crear Nueva Cuenta", true);
+        dialogo.setSize(560, 450);
+        dialogo.setLocationRelativeTo(this);
+        dialogo.setUndecorated(true);
         
-        JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
-        panel.add(new JLabel("Usuario (único):"));
-        panel.add(txtUsuario);
-        panel.add(new JLabel("Password (5 caracteres):"));
-        panel.add(txtPassword);
-        panel.add(new JLabel("Confirmar Password:"));
-        panel.add(txtConfirmar);
-        panel.add(new JLabel(""));
+        // Panel con fondo semi-transparente
+        JPanel panelContenido = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setColor(new Color(30, 40, 60, 230)); // Semi-transparente
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+            }
+        };
+        panelContenido.setOpaque(false);
+        panelContenido.setLayout(null);
+        panelContenido.setBorder(BorderFactory.createLineBorder(new Color(100, 120, 180), 2));
         
-        JLabel lblInfo = new JLabel("<html><small>Password debe tener exactamente 5 caracteres,<br>" +
-                                     "con al menos 1 dígito y 1 carácter especial</small></html>");
-        lblInfo.setForeground(Color.GRAY);
-        panel.add(lblInfo);
+        JLabel lblTitulo = new JLabel("Crear Nueva Cuenta", SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 26));
+        lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setBounds(0, 25, 560, 35);
+        panelContenido.add(lblTitulo);
         
-        int resultado = JOptionPane.showConfirmDialog(this, panel, 
-            "Crear Nueva Cuenta", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        // Usuario
+        JLabel lblUsuario = new JLabel("Usuario:");
+        lblUsuario.setFont(new Font("Arial", Font.BOLD, 16));
+        lblUsuario.setForeground(Color.WHITE);
+        lblUsuario.setBounds(70, 90, 120, 30);
+        panelContenido.add(lblUsuario);
         
-        if (resultado == JOptionPane.OK_OPTION) {
+        JTextField txtUsuario = new JTextField();
+        txtUsuario.setFont(new Font("Arial", Font.PLAIN, 15));
+        txtUsuario.setBounds(200, 90, 300, 35);
+        panelContenido.add(txtUsuario);
+        
+        // Password
+        JLabel lblPassword = new JLabel("Password:");
+        lblPassword.setFont(new Font("Arial", Font.BOLD, 16));
+        lblPassword.setForeground(Color.WHITE);
+        lblPassword.setBounds(70, 150, 120, 30);
+        panelContenido.add(lblPassword);
+        
+        JPasswordField txtPassword = new JPasswordField();
+        txtPassword.setFont(new Font("Arial", Font.PLAIN, 15));
+        txtPassword.setBounds(200, 150, 300, 35);
+        panelContenido.add(txtPassword);
+        
+        // Confirmar
+        JLabel lblConfirmar = new JLabel("Confirmar:");
+        lblConfirmar.setFont(new Font("Arial", Font.BOLD, 16));
+        lblConfirmar.setForeground(Color.WHITE);
+        lblConfirmar.setBounds(70, 210, 120, 30);
+        panelContenido.add(lblConfirmar);
+        
+        JPasswordField txtConfirmar = new JPasswordField();
+        txtConfirmar.setFont(new Font("Arial", Font.PLAIN, 15));
+        txtConfirmar.setBounds(200, 210, 300, 35);
+        panelContenido.add(txtConfirmar);
+        
+        // Checkbox para mostrar contraseña
+        JCheckBox chkMostrar = new JCheckBox("Mostrar");
+        chkMostrar.setFont(new Font("Arial", Font.PLAIN, 13));
+        chkMostrar.setForeground(Color.WHITE);
+        chkMostrar.setOpaque(false);
+        chkMostrar.setFocusPainted(false);
+        chkMostrar.setBounds(200, 250, 100, 25);
+        chkMostrar.addActionListener(e -> {
+            char echoChar = chkMostrar.isSelected() ? (char) 0 : '•';
+            txtPassword.setEchoChar(echoChar);
+            txtConfirmar.setEchoChar(echoChar);
+        });
+        panelContenido.add(chkMostrar);
+        
+        // Info
+        JLabel lblInfo = new JLabel("<html><center>Password: 5 caracteres<br>1 dígito, 1 especial</center></html>");
+        lblInfo.setFont(new Font("Arial", Font.PLAIN, 12));
+        lblInfo.setForeground(new Color(200, 200, 220));
+        lblInfo.setBounds(200, 275, 300, 35);
+        panelContenido.add(lblInfo);
+        
+        // Botones
+        JButton btnCrear = crearBotonAzul("Crear");
+        btnCrear.setBounds(135, 350, 130, 50);
+        btnCrear.addActionListener(e -> {
             String usuario = txtUsuario.getText().trim();
             String password = new String(txtPassword.getPassword());
             String confirmar = new String(txtConfirmar.getPassword());
             
             if (usuario.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(this, 
-                    "Debes completar todos los campos", 
+                JOptionPane.showMessageDialog(dialogo, "Completa todos los campos", 
                     "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
             if (!password.equals(confirmar)) {
-                JOptionPane.showMessageDialog(this, 
-                    "Las contraseñas no coinciden", 
+                JOptionPane.showMessageDialog(dialogo, "Las contraseñas no coinciden", 
                     "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
             if (gestorUsuarios.registrarUsuario(usuario, password)) {
-                JOptionPane.showMessageDialog(this, 
-                    "¡Cuenta creada exitosamente!\n" +
-                    "Usuario: " + usuario + "\n" +
-                    "Ahora puedes iniciar sesión.", 
-                    "Registro Exitoso", JOptionPane.INFORMATION_MESSAGE);
-                
-                // Auto login
+                JOptionPane.showMessageDialog(dialogo, "¡Cuenta creada exitosamente!", 
+                    "Éxito", JOptionPane.INFORMATION_MESSAGE);
                 Usuario nuevoUsuario = gestorUsuarios.iniciarSesion(usuario, password);
                 if (nuevoUsuario != null) {
+                    dialogo.dispose();
                     MenuPrincipal.mostrar(nuevoUsuario, gestorUsuarios);
                     dispose();
                 }
             } else {
-                JOptionPane.showMessageDialog(this, 
-                    "No se pudo crear la cuenta.\n\n" +
-                    "Posibles razones:\n" +
-                    "• El nombre de usuario ya existe\n" +
-                    "• El password no cumple los requisitos\n" +
-                    "  (5 caracteres, 1 dígito, 1 especial)", 
+                JOptionPane.showMessageDialog(dialogo, 
+                    "Error al crear cuenta.\nVerifica que el usuario no exista\n" +
+                    "y que el password cumpla los requisitos.", 
                     "Error de Registro", JOptionPane.ERROR_MESSAGE);
             }
-        }
+        });
+        panelContenido.add(btnCrear);
+        
+        JButton btnCancelar = crearBotonRojo("Cancelar");
+        btnCancelar.setBounds(295, 350, 130, 50);
+        btnCancelar.addActionListener(e -> dialogo.dispose());
+        panelContenido.add(btnCancelar);
+        
+        dialogo.setContentPane(panelContenido);
+        dialogo.setVisible(true);
     }
     
     /* ==================== MAIN ==================== */
     
     public static void main(String[] args) {
-        // Inicializar gestor de usuarios (puedes usar Archivo o Memoria)
         GestorUsuarios gestor = new GestorUsuarios(
             new Cuentas.RepositorioUsuariosArchivo("usuarios.csv")
-            // O para pruebas: new Cuentas.RepositorioUsuariosMemoria()
         );
         
-        SwingUtilities.invokeLater(() -> {
-            MenuInicio menu = new MenuInicio(gestor);
-            menu.setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new MenuInicio(gestor).setVisible(true));
     }
 }
