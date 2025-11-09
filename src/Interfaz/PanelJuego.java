@@ -24,7 +24,6 @@ import java.util.Map;
  */
 /* ============================================================================
    ARCHIVO: PanelJuego.java
-   HUD con botón de libro (stats), cronómetro y carga de imágenes reales
    ============================================================================ */
 public class PanelJuego extends JPanel {
     private final PanelTablero tablero;
@@ -47,22 +46,17 @@ public class PanelJuego extends JPanel {
 
         cargarImagenes();
 
-        // Panel superior (Jugador Negro)
         JPanel panelNegro = crearPanelJugador(ColorJugador.NEGRO);
         add(panelNegro, BorderLayout.NORTH);
 
-        // Centro: Tablero
         add(tablero, BorderLayout.CENTER);
 
-        // Panel inferior (Jugador Blanco)
         JPanel panelBlanco = crearPanelJugador(ColorJugador.BLANCO);
         add(panelBlanco, BorderLayout.SOUTH);
 
-        // Panel derecho: Cronómetro, Libro y Retirar
         JPanel panelDerecha = crearPanelDerecha();
         add(panelDerecha, BorderLayout.EAST);
         
-        // Iniciar cronómetro
         iniciarCronometro();
     }
 
@@ -122,13 +116,11 @@ public class PanelJuego extends JPanel {
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         panel.setPreferredSize(new Dimension(200, 0));
         
-        // Cronómetro
         lblCronometro = new JLabel("⏱ 00:00");
         lblCronometro.setFont(new Font("Monospaced", Font.BOLD, 24));
         lblCronometro.setForeground(new Color(100, 255, 100));
         lblCronometro.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        // Botón Retirar
         btnRetirar = new JButton("RETIRAR");
         btnRetirar.setFont(new Font("Arial", Font.BOLD, 18));
         btnRetirar.setForeground(Color.WHITE);
@@ -137,15 +129,8 @@ public class PanelJuego extends JPanel {
         btnRetirar.setMaximumSize(new Dimension(150, 50));
         btnRetirar.setFocusPainted(false);
         
-        // Botón Libro (Stats)
         btnLibro = new JButton();
-        if (imgLibro != null) {
-            Image scaled = imgLibro.getScaledInstance(80, 80, Image.SCALE_SMOOTH);
-            btnLibro.setIcon(new ImageIcon(scaled));
-        } else {
-            btnLibro.setText("📖");
-            btnLibro.setFont(new Font("Arial", Font.PLAIN, 48));
-        }
+        cargarImagenLibro();
         btnLibro.setPreferredSize(new Dimension(100, 100));
         btnLibro.setMaximumSize(new Dimension(100, 100));
         btnLibro.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -154,7 +139,6 @@ public class PanelJuego extends JPanel {
         btnLibro.setFocusPainted(false);
         btnLibro.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLibro.setToolTipText("Ver Estadísticas de Piezas");
-        
         btnLibro.addActionListener(e -> mostrarFichaStats());
         
         panel.add(Box.createVerticalGlue());
@@ -168,46 +152,49 @@ public class PanelJuego extends JPanel {
         return panel;
     }
 
+    private void cargarImagenLibro() {
+        try {
+            imgLibro = ImageIO.read(new File("src/Interfaz/Imagenes/Libro.png"));
+            Image scaled = imgLibro.getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+            btnLibro.setIcon(new ImageIcon(scaled));
+        } catch (Exception e) {
+            try {
+                imgLibro = ImageIO.read(new File("Interfaz/Imagenes/Libro.png"));
+                Image scaled = imgLibro.getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+                btnLibro.setIcon(new ImageIcon(scaled));
+            } catch (Exception e2) {
+                btnLibro.setText("📖");
+                btnLibro.setFont(new Font("Arial", Font.PLAIN, 48));
+            }
+        }
+    }
+
     private void cargarImagenes() {
-        // Cargar imágenes de piezas
         String[] tipos = {"hl", "vampiro", "muerte", "zombie"};
         String[] colores = {"blanco", "negro"};
         
         for (String tipo : tipos) {
             for (String color : colores) {
+                BufferedImage img = null;
                 try {
-                    // Intentar primero desde el paquete
                     String ruta = "src/Interfaz/Imagenes/" + tipo + "_" + color + ".png";
-                    BufferedImage img = null;
+                    img = ImageIO.read(new File(ruta));
+                } catch (Exception e1) {
                     try {
+                        String ruta = "Interfaz/Imagenes/" + tipo + "_" + color + ".png";
                         img = ImageIO.read(new File(ruta));
-                    } catch (Exception e1) {
-                        // Si falla, intentar ruta relativa
-                        ruta = "Interfaz/Imagenes/" + tipo + "_" + color + ".png";
-                        img = ImageIO.read(new File(ruta));
+                    } catch (Exception e2) {
+                        System.err.println("No se pudo cargar: " + tipo + "_" + color + ".png");
+                        continue;
                     }
-                    
-                    // Mapear a los nombres de TipoPieza
-                    String keyTipo = tipo.equals("hl") ? "HOMBRE_LOBO" :
-                                   tipo.equals("vampiro") ? "VAMPIRO" :
-                                   tipo.equals("muerte") ? "NIGROMANTE" : "ZOMBIE";
-                    String keyColor = color.toUpperCase();
-                    
-                    imagenes.put(keyTipo + "_" + keyColor, img);
-                } catch (Exception e) {
-                    System.err.println("No se pudo cargar imagen: " + tipo + "_" + color + ".png - " + e.getMessage());
                 }
-            }
-        }
-        
-        // Cargar libro y ficha de stats
-        try {
-            imgLibro = ImageIO.read(new File("src/Interfaz/Imagenes/Libro.png"));
-        } catch (Exception e) {
-            try {
-                imgLibro = ImageIO.read(new File("Interfaz/Imagenes/Libro.png"));
-            } catch (Exception e2) {
-                System.err.println("No se pudo cargar Libro.png: " + e2.getMessage());
+                
+                String keyTipo = tipo.equals("hl") ? "HOMBRE_LOBO" :
+                               tipo.equals("vampiro") ? "VAMPIRO" :
+                               tipo.equals("muerte") ? "NIGROMANTE" : "ZOMBIE";
+                String keyColor = color.toUpperCase();
+                
+                imagenes.put(keyTipo + "_" + keyColor, img);
             }
         }
         
@@ -217,7 +204,7 @@ public class PanelJuego extends JPanel {
             try {
                 imgFichaStats = ImageIO.read(new File("Interfaz/Imagenes/Ficha_Stats.jpg"));
             } catch (Exception e2) {
-                System.err.println("No se pudo cargar Ficha_Stats.jpg: " + e2.getMessage());
+                System.err.println("No se pudo cargar Ficha_Stats.jpg");
             }
         }
     }
@@ -230,12 +217,10 @@ public class PanelJuego extends JPanel {
             return;
         }
         
-        // Crear diálogo centrado con la imagen
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), 
             "Estadísticas de Piezas", true);
         dialog.setLayout(new BorderLayout());
         
-        // Escalar imagen para que quepa bien
         int maxWidth = 800;
         int maxHeight = 600;
         Image scaled = imgFichaStats.getScaledInstance(maxWidth, maxHeight, Image.SCALE_SMOOTH);

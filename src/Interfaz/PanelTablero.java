@@ -19,7 +19,6 @@ import java.util.Set;
  */
 /* ============================================================================
    ARCHIVO: PanelTablero.java
-   Tablero 6x6 con fondo de imagen y transparencia
    ============================================================================ */
 public class PanelTablero extends JPanel {
 
@@ -39,12 +38,7 @@ public class PanelTablero extends JPanel {
         setOpaque(false);
         setPreferredSize(new Dimension(880, 880));
         
-        // Cargar imagen de fondo
-        try {
-            fondoTablero = ImageIO.read(new File("Interfaz/Imagenes/tablero_fondo.png"));
-        } catch (Exception e) {
-            System.err.println("No se pudo cargar tablero_fondo.png: " + e.getMessage());
-        }
+        cargarFondo();
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -55,6 +49,18 @@ public class PanelTablero extends JPanel {
                 }
             }
         });
+    }
+
+    private void cargarFondo() {
+        try {
+            fondoTablero = ImageIO.read(new File("src/Interfaz/Imagenes/tablero_fondo.png"));
+        } catch (Exception e) {
+            try {
+                fondoTablero = ImageIO.read(new File("Interfaz/Imagenes/tablero_fondo.png"));
+            } catch (Exception e2) {
+                System.err.println("No se pudo cargar tablero_fondo.png: " + e2.getMessage());
+            }
+        }
     }
 
     public void setOnClick(ClickListener l) { 
@@ -107,21 +113,21 @@ public class PanelTablero extends JPanel {
         
         recomputeGeometry();
 
-        // Dibujar fondo de imagen
+        // Dibujar fondo de imagen escalado
         if (fondoTablero != null) {
             g2.drawImage(fondoTablero, 0, 0, getWidth(), getHeight(), null);
         }
 
-        // Tablero con opacidad (para ver el fondo)
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
+        // Tablero con opacidad (60% para ver mejor el fondo)
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f));
         
         // Casillas alternadas
         for (int r = 0; r < N; r++) {
             for (int c = 0; c < N; c++) {
                 boolean oscuro = (r + c) % 2 == 0;
                 g2.setColor(oscuro ? 
-                    new Color(30, 40, 70, 180) : 
-                    new Color(200, 210, 230, 180));
+                    new Color(25, 35, 60, 200) : 
+                    new Color(180, 190, 210, 200));
                 g2.fillRect(offX + c * side, offY + r * side, side, side);
             }
         }

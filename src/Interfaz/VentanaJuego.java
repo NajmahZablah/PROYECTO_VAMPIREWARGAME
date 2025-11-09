@@ -4,6 +4,8 @@
  */
 package Interfaz;
 
+import Cuentas.GestorUsuarios;
+import Cuentas.Usuario;
 import Modelo.ColorJugador;
 import Modelo.TipoPieza;
 
@@ -16,20 +18,10 @@ import java.util.*;
  *
  * @author najma
  */
-/**
- * VentanaJuego CORREGIDA según especificaciones del PDF:
- * - Ruleta al azar (no por clicks)
- * - Movimiento vs Ataque automático según casilla destino
- * - Sistema de vida/escudo/ataque
- * - Ataques especiales correctos
- * - Zombies se conjuran opcionalmente
- * - Sistema de intentos según piezas perdidas
- */
 public class VentanaJuego extends JFrame {
 
     private static final int N = 6;
 
-    /* ====== Estado con Vida/Escudo según PDF ====== */
     private static class Celda {
         TipoPieza tipo;
         ColorJugador color;
@@ -39,7 +31,6 @@ public class VentanaJuego extends JFrame {
         Celda(TipoPieza t, ColorJugador c) {
             tipo = t;
             color = c;
-            // Según imagen del PDF: HL(6,3,5), VA(4,5,3), NI(5,2,4), ZO(1,0,1)
             switch (t) {
                 case HOMBRE_LOBO:
                     vida = 6; escudo = 3; break;
@@ -65,13 +56,32 @@ public class VentanaJuego extends JFrame {
     private Set<Point> highlights = new HashSet<>();
     private int intentosRuletaRestantes = 1;
 
-    public VentanaJuego() {
+    // Sistema de usuarios
+    private final Usuario jugador1;
+    private final Usuario jugador2;
+    private final ColorJugador colorJugador1;
+    private final GestorUsuarios gestorUsuarios;
+
+    public VentanaJuego(Usuario jugador1, Usuario jugador2, ColorJugador colorJugador1, GestorUsuarios gestor) {
         super("Vampire Wargame - Tablero");
+        
+        this.jugador1 = jugador1;
+        this.jugador2 = jugador2;
+        this.colorJugador1 = colorJugador1;
+        this.gestorUsuarios = gestor;
+        
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setContentPane(hud);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        hud.setNombres("Jugador (Negras)", "Rival (Blancas)");
+        // Configurar nombres según color elegido
+        if (colorJugador1 == ColorJugador.NEGRO) {
+            hud.setNombres(jugador1.getNombreUsuario() + " (Negras)", 
+                          jugador2.getNombreUsuario() + " (Blancas)");
+        } else {
+            hud.setNombres(jugador2.getNombreUsuario() + " (Negras)", 
+                          jugador1.getNombreUsuario() + " (Blancas)");
+        }
 
         colocarInicial();
         refrescarIconos();
@@ -85,23 +95,20 @@ public class VentanaJuego extends JFrame {
         actualizarHUD();
     }
 
-    /* ================== RULETA AL AZAR (CORREGIDO) ================== */
+    /* ==================== RULETA ==================== */
     
     private void girarRuletaAlAzar(ColorJugador lado) {
         if (lado != turno) return;
         
-        // Abrir ventana de ruleta ANIMADA
         new RuletaOverlay(this, turno, new RuletaOverlay.Listener() {
             @Override 
             public void onElegido(TipoPieza tipo) {
                 tipoSeleccionadoPorRuleta = tipo;
                 intentosRuletaRestantes--;
                 
-                // Mostrar qué se seleccionó
                 String nombreTipo = tipo == TipoPieza.HOMBRE_LOBO ? "Hombre Lobo" :
                                    tipo == TipoPieza.VAMPIRO ? "Vampiro" : "Nigromante";
                 
-                // Verificar si tiene piezas de este tipo
                 if (!tienePiezaDeTipo(tipo, turno)) {
                     if (intentosRuletaRestantes > 0) {
                         JOptionPane.showMessageDialog(VentanaJuego.this, 
@@ -120,14 +127,11 @@ public class VentanaJuego extends JFrame {
                     }
                 }
                 
-                // Resaltar piezas válidas
                 seleccionarPiezaDeTipo(tipo, turno);
             }
             
             @Override 
-            public void onCancel() {
-                // No hace nada si cancela
-            }
+            public void onCancel() {}
         }).setVisible(true);
     }
 
@@ -143,7 +147,7 @@ public class VentanaJuego extends JFrame {
         return false;
     }
 
-    /* ================== SELECCIÓN Y MOVIMIENTO (CORREGIDO) ================== */
+    /* ==================== SELECCIÓN Y MOVIMIENTO ==================== */
     
     private void seleccionarPiezaDeTipo(TipoPieza tipo, ColorJugador lado) {
         highlights.clear();
@@ -165,7 +169,6 @@ public class VentanaJuego extends JFrame {
 
         Point p = new Point(col, fila);
         
-        // PASO 1: Seleccionar pieza propia
         if (piezaSeleccionada == null) {
             Celda cel = board[fila][col];
             if (cel != null && cel.tipo == tipoSeleccionadoPorRuleta && cel.color == turno) {
@@ -176,14 +179,11 @@ public class VentanaJuego extends JFrame {
             return;
         }
 
-        // PASO 2: Ejecutar movimiento o ataque
         if (highlights.contains(p)) {
             Celda destino = board[fila][col];
             
-            // CASO A: Casilla vacía → MOVIMIENTO (o conjurar zombie si es Nigromante)
             if (destino == null) {
                 if (board[piezaSeleccionada.y][piezaSeleccionada.x].tipo == TipoPieza.NIGROMANTE) {
-                    // Preguntar: ¿Mover o conjurar zombie?
                     int opcion = JOptionPane.showOptionDialog(this,
                         "¿Qué deseas hacer?",
                         "Acción Nigromante",
@@ -193,9 +193,9 @@ public class VentanaJuego extends JFrame {
                         new Object[]{"Mover", "Conjurar Zombie"},
                         "Mover");
                     
-                    if (opcion == 1) { // Conjurar zombie
+                    if (opcion == 1) {
                         conjurarZombie(p);
-                    } else { // Mover
+                    } else {
                         moverPieza(piezaSeleccionada, p);
                     }
                 } else {
@@ -203,30 +203,26 @@ public class VentanaJuego extends JFrame {
                 }
                 finalizarTurno();
             }
-            // CASO B: Casilla con pieza propia → ERROR
             else if (destino.color == turno) {
                 JOptionPane.showMessageDialog(this, 
                     "No puedes atacar tus propias piezas",
                     "Acción Inválida", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            // CASO C: Casilla con enemigo → ATAQUE
             else {
                 elegirTipoAtaque(piezaSeleccionada, p);
             }
         }
     }
 
-    /* ================== ATAQUES (CORREGIDO CON ESPECIALES) ================== */
+    /* ==================== ATAQUES ==================== */
     
     private void elegirTipoAtaque(Point desde, Point objetivo) {
         Celda atacante = board[desde.y][desde.x];
         
-        // Opciones según tipo de pieza
         java.util.List<String> opciones = new ArrayList<>();
         opciones.add("Ataque Normal");
         
-        // Ataques especiales según tipo
         if (atacante.tipo == TipoPieza.VAMPIRO && esAdyacente(desde, objetivo)) {
             opciones.add("Chupar Sangre");
         }
@@ -240,11 +236,9 @@ public class VentanaJuego extends JFrame {
         }
         
         if (opciones.size() == 1) {
-            // Solo ataque normal disponible
             ejecutarAtaqueNormal(desde, objetivo);
             finalizarTurno();
         } else {
-            // Mostrar opciones
             int eleccion = JOptionPane.showOptionDialog(this,
                 "Selecciona tipo de ataque:",
                 "Ataque",
@@ -279,7 +273,6 @@ public class VentanaJuego extends JFrame {
         Celda atacante = board[desde.y][desde.x];
         Celda victima = board[objetivo.y][objetivo.x];
         
-        // Daño según tipo (espada del PDF)
         int danio = switch (atacante.tipo) {
             case HOMBRE_LOBO -> 5;
             case VAMPIRO -> 3;
@@ -295,9 +288,8 @@ public class VentanaJuego extends JFrame {
         Celda atacante = board[desde.y][desde.x];
         Celda victima = board[objetivo.y][objetivo.x];
         
-        // Quita 1 punto, restaura 1 vida al vampiro
         aplicarDanio(victima, 1, true);
-        atacante.vida = Math.min(atacante.vida + 1, 4); // Max 4 según PDF
+        atacante.vida = Math.min(atacante.vida + 1, 4);
         
         JOptionPane.showMessageDialog(this,
             "¡Vampiro chupó sangre!\nDaño: 1 punto\nVida restaurada: +1",
@@ -310,8 +302,7 @@ public class VentanaJuego extends JFrame {
         Celda atacante = board[desde.y][desde.x];
         Celda victima = board[objetivo.y][objetivo.x];
         
-        // Ignora escudo, daño = 2 (mitad del poder normal)
-        aplicarDanio(victima, 2, false); // false = ignora escudo
+        aplicarDanio(victima, 2, false);
         
         JOptionPane.showMessageDialog(this,
             "¡Nigromante lanzó su lanza!\nDaño: 2 puntos (ignora escudo)",
@@ -337,7 +328,6 @@ public class VentanaJuego extends JFrame {
 
     private void aplicarDanio(Celda victima, int danio, boolean considerarEscudo) {
         if (considerarEscudo) {
-            // Primero se gasta el escudo
             if (victima.escudo >= danio) {
                 victima.escudo -= danio;
             } else {
@@ -346,7 +336,6 @@ public class VentanaJuego extends JFrame {
                 victima.vida -= danioRestante;
             }
         } else {
-            // Ignora escudo (lanzar lanza)
             victima.vida -= danio;
         }
         
@@ -376,7 +365,7 @@ public class VentanaJuego extends JFrame {
         refrescarIconos();
     }
 
-    /* ================== MOVIMIENTO Y HELPERS ================== */
+    /* ==================== MOVIMIENTO Y HELPERS ==================== */
     
     private void moverPieza(Point desde, Point hacia) {
         Celda src = board[desde.y][desde.x];
@@ -396,21 +385,18 @@ public class VentanaJuego extends JFrame {
     private Set<Point> calcularMovimientosYAtaquesLegales(Point pos, TipoPieza tipo, ColorJugador lado) {
         Set<Point> resultado = new HashSet<>();
         
-        // Movimientos adyacentes (8 direcciones)
         int[][] dirs = {{-1,-1},{-1,0},{-1,1},{0,-1},{0,1},{1,-1},{1,0},{1,1}};
         
         for (int[] d : dirs) {
             int nr = pos.y + d[0], nc = pos.x + d[1];
             if (nr >= 0 && nr < N && nc >= 0 && nc < N) {
                 Celda cel = board[nr][nc];
-                // Puede moverse a vacía o atacar enemigo
                 if (cel == null || cel.color != lado) {
                     resultado.add(new Point(nc, nr));
                 }
             }
         }
         
-        // Hombre Lobo: hasta 2 casillas vacías
         if (tipo == TipoPieza.HOMBRE_LOBO) {
             for (int[] d : dirs) {
                 int nr = pos.y + d[0], nc = pos.x + d[1];
@@ -423,7 +409,6 @@ public class VentanaJuego extends JFrame {
             }
         }
         
-        // Nigromante: lanzar lanza a 2 casillas
         if (tipo == TipoPieza.NIGROMANTE) {
             for (int[] d : dirs) {
                 int nr2 = pos.y + 2*d[0], nc2 = pos.x + 2*d[1];
@@ -476,7 +461,7 @@ public class VentanaJuego extends JFrame {
         return false;
     }
 
-    /* ================== GESTIÓN DE TURNOS ================== */
+    /* ==================== GESTIÓN DE TURNOS ==================== */
     
     private void finalizarTurno() {
         tipoSeleccionadoPorRuleta = null;
@@ -484,10 +469,8 @@ public class VentanaJuego extends JFrame {
         highlights.clear();
         panelTablero.setHighlights(null);
         
-        // Cambiar turno
         turno = (turno == ColorJugador.BLANCO) ? ColorJugador.NEGRO : ColorJugador.BLANCO;
         
-        // Calcular intentos según piezas perdidas
         int piezasPerdidas = contarPiezasPerdidas(turno);
         if (piezasPerdidas >= 4) {
             intentosRuletaRestantes = 3;
@@ -519,17 +502,9 @@ public class VentanaJuego extends JFrame {
         int piezasNegras = contarTodasLasPiezas(ColorJugador.NEGRO);
         
         if (piezasBlancas == 0) {
-            hud.detenerCronometro();
-            JOptionPane.showMessageDialog(this,
-                "¡JUGADOR NEGRO HA VENCIDO!\nFELICIDADES, HAS GANADO 3 PUNTOS",
-                "Fin del Juego", JOptionPane.INFORMATION_MESSAGE);
-            dispose();
+            terminarJuego(ColorJugador.NEGRO, false);
         } else if (piezasNegras == 0) {
-            hud.detenerCronometro();
-            JOptionPane.showMessageDialog(this,
-                "¡JUGADOR BLANCO HA VENCIDO!\nFELICIDADES, HAS GANADO 3 PUNTOS",
-                "Fin del Juego", JOptionPane.INFORMATION_MESSAGE);
-            dispose();
+            terminarJuego(ColorJugador.BLANCO, false);
         }
     }
 
@@ -554,18 +529,38 @@ public class VentanaJuego extends JFrame {
             JOptionPane.WARNING_MESSAGE);
         
         if (respuesta == JOptionPane.YES_OPTION) {
-            hud.detenerCronometro();
-            String ganador = turno == ColorJugador.BLANCO ? "NEGRO" : "BLANCO";
-            String perdedor = turno == ColorJugador.BLANCO ? "BLANCO" : "NEGRO";
-            JOptionPane.showMessageDialog(this,
-                String.format("JUGADOR %s SE HA RETIRADO\n¡FELICIDADES JUGADOR %s!\nHAS GANADO 3 PUNTOS",
-                    perdedor, ganador),
-                "Juego Terminado", JOptionPane.INFORMATION_MESSAGE);
-            dispose();
+            ColorJugador ganador = (turno == ColorJugador.BLANCO) ? ColorJugador.NEGRO : ColorJugador.BLANCO;
+            terminarJuego(ganador, true);
         }
     }
 
-    /* ================== INICIALIZACIÓN ================== */
+    private void terminarJuego(ColorJugador ganador, boolean porRetiro) {
+        hud.detenerCronometro();
+        
+        Usuario usuarioGanador, usuarioPerdedor;
+        
+        if (colorJugador1 == ganador) {
+            usuarioGanador = jugador1;
+            usuarioPerdedor = jugador2;
+        } else {
+            usuarioGanador = jugador2;
+            usuarioPerdedor = jugador1;
+        }
+        
+        gestorUsuarios.registrarResultadoPartida(usuarioGanador, true, porRetiro);
+        gestorUsuarios.registrarResultadoPartida(usuarioPerdedor, false, false);
+        
+        String mensaje = porRetiro ?
+            String.format("JUGADOR %s SE HA RETIRADO\n¡FELICIDADES %s!\nHAS GANADO 3 PUNTOS",
+                usuarioPerdedor.getNombreUsuario(), usuarioGanador.getNombreUsuario()) :
+            String.format("¡%s HA VENCIDO A %s!\nFELICIDADES, HAS GANADO 3 PUNTOS",
+                usuarioGanador.getNombreUsuario(), usuarioPerdedor.getNombreUsuario());
+        
+        JOptionPane.showMessageDialog(this, mensaje, "Fin del Juego", JOptionPane.INFORMATION_MESSAGE);
+        dispose();
+    }
+
+    /* ==================== INICIALIZACIÓN ==================== */
     
     private void colocarInicial() {
         for (int r = 0; r < N; r++) Arrays.fill(board[r], null);
@@ -612,7 +607,20 @@ public class VentanaJuego extends JFrame {
         SwingUtilities.invokeLater(this::refrescarIconos);
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new VentanaJuego().setVisible(true));
+    /* ==================== MÉTODO ESTÁTICO PARA INICIAR DESDE MENÚ ==================== */
+    
+    public static void iniciarDesdeMenu(Frame menuPrincipal, Usuario usuarioActual, GestorUsuarios gestor) {
+        DialogoSeleccionOponente dialogo = new DialogoSeleccionOponente(menuPrincipal, usuarioActual, gestor);
+        dialogo.setVisible(true);
+        
+        if (dialogo.isConfirmado()) {
+            Usuario oponente = dialogo.getOponenteSeleccionado();
+            ColorJugador colorElegido = dialogo.getColorElegido();
+            
+            SwingUtilities.invokeLater(() -> {
+                VentanaJuego juego = new VentanaJuego(usuarioActual, oponente, colorElegido, gestor);
+                juego.setVisible(true);
+            });
+        }
     }
 }

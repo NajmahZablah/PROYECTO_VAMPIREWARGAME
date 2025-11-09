@@ -16,10 +16,6 @@ import java.awt.geom.AffineTransform;
  *
  * @author najma
  */
-/* ============================================================================
-   ARCHIVO: RuletaOverlay.java
-   Ruleta ANIMADA que gira visualmente y se detiene al azar
-   ============================================================================ */
 public class RuletaOverlay extends JDialog {
 
     public interface Listener {
@@ -30,7 +26,7 @@ public class RuletaOverlay extends JDialog {
     private final Listener listener;
     private Timer timer;
     private double anguloActual = 0;
-    private double velocidadAngular = 20; // grados por frame
+    private double velocidadAngular = 20;
     private boolean girando = false;
     private JPanel panelRueda;
 
@@ -49,7 +45,6 @@ public class RuletaOverlay extends JDialog {
         setLayout(new BorderLayout(0, 15));
         getContentPane().setBackground(new Color(15, 15, 25));
 
-        // Panel de la ruleta
         panelRueda = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -61,19 +56,14 @@ public class RuletaOverlay extends JDialog {
                 int r = Math.min(w, h) - 60;
                 int cx = w / 2, cy = h / 2;
 
-                // Guardar transform original
                 AffineTransform original = g2.getTransform();
-                
-                // Rotar todo el gráfico alrededor del centro
                 g2.rotate(Math.toRadians(anguloActual), cx, cy);
 
                 int x = cx - r / 2, y = cy - r / 2;
 
-                // Disco de fondo
                 g2.setColor(new Color(25, 25, 40));
                 g2.fillOval(x, y, r, r);
                 
-                // Borde exterior
                 g2.setStroke(new BasicStroke(6f));
                 g2.setColor(new Color(150, 150, 200));
                 g2.drawOval(x, y, r, r);
@@ -81,7 +71,6 @@ public class RuletaOverlay extends JDialog {
                 double paso = 360.0 / SECTORES.length;
                 double ang = -90;
 
-                // Dibujar sectores
                 for (int i = 0; i < SECTORES.length; i++) {
                     Color color1 = new Color(50, 70, 140, 220);
                     Color color2 = new Color(90, 110, 180, 220);
@@ -92,7 +81,6 @@ public class RuletaOverlay extends JDialog {
                     g2.setStroke(new BasicStroke(3f));
                     g2.drawArc(x, y, r, r, (int) ang, (int) paso);
 
-                    // Texto del sector
                     String txt = switch (SECTORES[i]) {
                         case HOMBRE_LOBO -> "HL";
                         case VAMPIRO -> "VA";
@@ -106,21 +94,17 @@ public class RuletaOverlay extends JDialog {
                     int tx = (int) (cx + (r * 0.32) * Math.cos(rad)) - fm.stringWidth(txt) / 2;
                     int ty = (int) (cy + (r * 0.32) * Math.sin(rad)) + fm.getAscent() / 2;
                     
-                    // Sombra
                     g2.setColor(new Color(0, 0, 0, 150));
                     g2.drawString(txt, tx + 3, ty + 3);
                     
-                    // Texto
                     g2.setColor(Color.WHITE);
                     g2.drawString(txt, tx, ty);
 
                     ang += paso;
                 }
 
-                // Restaurar transform para dibujar el puntero fijo
                 g2.setTransform(original);
 
-                // PUNTERO FIJO arriba (no rota)
                 int px = cx, py = cy - r/2 - 25;
                 Polygon flecha = new Polygon();
                 flecha.addPoint(px, py);
@@ -141,7 +125,6 @@ public class RuletaOverlay extends JDialog {
         panelRueda.setPreferredSize(new Dimension(500, 500));
         add(panelRueda, BorderLayout.CENTER);
 
-        // Botón STOP
         JButton btnStop = new JButton("⏸ STOP");
         btnStop.setFont(new Font("Arial", Font.BOLD, 32));
         btnStop.setBackground(new Color(220, 50, 50));
@@ -158,7 +141,6 @@ public class RuletaOverlay extends JDialog {
         
         add(panelBoton, BorderLayout.SOUTH);
 
-        // Timer para animar (60 FPS)
         timer = new Timer(16, e -> {
             anguloActual += velocidadAngular;
             if (anguloActual >= 360) anguloActual -= 360;
@@ -170,7 +152,7 @@ public class RuletaOverlay extends JDialog {
 
     private void iniciarGiro() {
         girando = true;
-        velocidadAngular = 20; // Velocidad rápida inicial
+        velocidadAngular = 20;
         timer.start();
     }
 
@@ -179,12 +161,11 @@ public class RuletaOverlay extends JDialog {
         
         girando = false;
 
-        // Animación de desaceleración suave
         Timer desaceleracion = new Timer(30, null);
         
         desaceleracion.addActionListener(e -> {
             if (velocidadAngular > 0.5) {
-                velocidadAngular *= 0.92; // Desacelerar gradualmente
+                velocidadAngular *= 0.92;
                 anguloActual += velocidadAngular;
                 if (anguloActual >= 360) anguloActual -= 360;
                 panelRueda.repaint();
@@ -192,14 +173,11 @@ public class RuletaOverlay extends JDialog {
                 desaceleracion.stop();
                 timer.stop();
                 
-                // Determinar sector seleccionado
                 double paso = 360.0 / SECTORES.length;
-                // El puntero apunta arriba (0°), ajustamos el ángulo
                 double anguloNormalizado = (360 - anguloActual) % 360;
                 int idx = (int) (anguloNormalizado / paso) % SECTORES.length;
                 TipoPieza elegido = SECTORES[idx];
                 
-                // Pausa breve antes de cerrar
                 Timer delay = new Timer(500, ev -> {
                     listener.onElegido(elegido);
                     dispose();
