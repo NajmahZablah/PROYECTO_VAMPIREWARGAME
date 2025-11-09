@@ -4,10 +4,12 @@
  */
 package Interfaz;
 
-import Cuentas.*;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.net.URL;
 
 /**
  *
@@ -15,177 +17,174 @@ import java.awt.event.ActionEvent;
  */
 public class PanelJuego extends JPanel {
 
-    private final Usuario negro;
-    private final Usuario blanco;
-    private final GestorUsuarios gestor;
+    // Rutas (ajusta si tus archivos se llaman distinto)
+    private static final String RUTA_LIBRO = "/Interfaz/Imagenes/Libro.png";
+    private static final String RUTA_STATS = "/Interfaz/Imagenes/Ficha_Stats.jpg";
 
-    private final JLabel lblCrono = new JLabel("00:00");
-    private final JLabel lblNombreNegro = new JLabel();
-    private final JLabel lblNombreBlanco = new JLabel();
+    private final JLabel lblTiempo = new JLabel("00:00");
+    private final JLabel lblNegro  = new JLabel("Negras");
+    private final JLabel lblBlanco = new JLabel("Blancas");
+    private final JButton btnLibro = new JButton();
 
-    private final JButton btnGirar = new JButton("Girar ruleta");
-    private final JButton btnRenunciar = new JButton("Renunciar");
-    private final JButton btnLibro = new JButton("📖");
-
-    private final PanelTablero tablero = new PanelTablero();
-
+    // Cronómetro
     private Timer timer;
-    private int segundos = 0;
+    private long inicioMs;
 
-    private Turno turnoActual = Turno.NEGRAS;
-    public enum Turno { NEGRAS, BLANCAS }
+    // Imagen stats
+    private BufferedImage imgStats;
 
-    // estado de piezas para habilitar renuncia
-    private int piezasNegrasVivas = 6;
-    private int piezasBlancasVivas = 6;
-
-    public PanelJuego(Usuario uNegro, Usuario uBlanco, GestorUsuarios gestor) {
-        this.negro = uNegro;
-        this.blanco = uBlanco;
-        this.gestor = gestor;
-
+    public PanelJuego(JComponent tablero, String nombreNegras, String nombreBlancas) {
         setLayout(new BorderLayout());
-        construirUI();
-        iniciarCronometro();
-        actualizarTurnoYControles();
-    }
+        setOpaque(false);
 
-    private void construirUI() {
-        // HUD superior
-        JPanel hudArriba = new JPanel(new BorderLayout());
-        hudArriba.setBorder(BorderFactory.createEmptyBorder(6,12,6,12));
-        hudArriba.setBackground(new Color(20,20,30));
+        // Encabezado (cronómetro + nombres)
+        JPanel top = new JPanel(new BorderLayout());
+        top.setOpaque(false);
 
-        lblCrono.setForeground(Color.WHITE);
-        lblCrono.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblTiempo.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblTiempo.setForeground(Color.WHITE);
+        lblTiempo.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
 
-        lblNombreNegro.setText("🦇 " + negro.getNombreUsuario() + " (Negras)");
-        lblNombreBlanco.setText("🧛 " + blanco.getNombreUsuario() + " (Blancas)");
-        lblNombreNegro.setForeground(Color.WHITE);
-        lblNombreBlanco.setForeground(Color.WHITE);
+        lblNegro.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblNegro.setForeground(Color.WHITE);
+        lblNegro.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
 
-        JPanel izq = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
-        izq.setOpaque(false);
-        izq.add(lblNombreNegro);
+        lblBlanco.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblBlanco.setForeground(Color.WHITE);
+        lblBlanco.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
 
-        JPanel der = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
-        der.setOpaque(false);
-        der.add(lblNombreBlanco);
+        top.add(lblTiempo, BorderLayout.WEST);
+        top.add(lblNegro,  BorderLayout.CENTER);
+        top.add(lblBlanco, BorderLayout.EAST);
 
-        JPanel centro = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 0));
-        centro.setOpaque(false);
-        centro.add(lblCrono);
+        // Fondo semitransparente para legibilidad
+        JPanel topWrap = new JPanel(new BorderLayout()) {
+            @Override protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.setColor(new Color(0, 0, 0, 110));
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        topWrap.setOpaque(false);
+        topWrap.add(top, BorderLayout.CENTER);
 
-        hudArriba.add(izq, BorderLayout.WEST);
-        hudArriba.add(centro, BorderLayout.CENTER);
-        hudArriba.add(der, BorderLayout.EAST);
+        add(topWrap, BorderLayout.NORTH);
 
-        add(hudArriba, BorderLayout.NORTH);
-
-        // Tablero al centro
+        // Centro: tablero (inyectado)
         add(tablero, BorderLayout.CENTER);
 
-        // HUD inferior
-        JPanel hudAbajo = new JPanel(new BorderLayout());
-        hudAbajo.setBorder(BorderFactory.createEmptyBorder(8,12,8,12));
-        hudAbajo.setBackground(new Color(20,20,30));
+        // Botón del libro (abajo-derecha)
+        JPanel bottomRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 12)) {
+            @Override protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.setColor(new Color(0, 0, 0, 80));
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        bottomRight.setOpaque(false);
 
-        JPanel izqInf = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        izqInf.setOpaque(false);
-        izqInf.add(btnGirar);
+        configurarBotonLibro();
+        bottomRight.add(btnLibro);
+        add(bottomRight, BorderLayout.SOUTH);
 
-        JPanel derInf = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        derInf.setOpaque(false);
-        btnLibro.setToolTipText("Ver estadísticas de personajes");
-        derInf.add(btnRenunciar);
-        derInf.add(btnLibro);
-
-        hudAbajo.add(izqInf, BorderLayout.WEST);
-        hudAbajo.add(derInf, BorderLayout.EAST);
-
-        add(hudAbajo, BorderLayout.SOUTH);
-
-        // Listeners
-        btnGirar.addActionListener(e -> onGirar());
-        btnRenunciar.addActionListener(e -> onRenunciar());
-        btnLibro.addActionListener(this::onLibro);
+        setNombres(nombreNegras, nombreBlancas);
+        cargarImagenStats();
+        iniciarCronometro();
     }
 
-    private void iniciarCronometro() {
-        timer = new Timer(1000, e -> {
-            segundos++;
-            int m = segundos / 60;
-            int s = segundos % 60;
-            lblCrono.setText(String.format("%02d:%02d", m, s));
-        });
-        timer.start();
-    }
+    private void configurarBotonLibro() {
+        btnLibro.setFocusPainted(false);
+        btnLibro.setBorderPainted(false);
+        btnLibro.setContentAreaFilled(false);
+        btnLibro.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnLibro.setToolTipText("Ver estadísticas de piezas");
 
-    private void onGirar() {
-        // Aquí va tu lógica real de ruleta.
-        // Para demo: alternamos turno.
-        alternarTurno();
-    }
-
-    private void alternarTurno() {
-        turnoActual = (turnoActual == Turno.NEGRAS) ? Turno.BLANCAS : Turno.NEGRAS;
-        actualizarTurnoYControles();
-    }
-
-    private void actualizarTurnoYControles() {
-        boolean turnoNegras = (turnoActual == Turno.NEGRAS);
-        // El que NO está en turno queda bloqueado para girar y mover (aquí solo deshabilito "Girar")
-        btnGirar.setEnabled(turnoNegras); // el que invita empieza (negras)
-
-        // Renuncia: cuando el jugador EN TURNO tiene <= mitad de piezas
-        int totalInicial = 6;
-        boolean activarRenuncia = turnoNegras
-                ? (piezasNegrasVivas <= totalInicial / 2)
-                : (piezasBlancasVivas <= totalInicial / 2);
-        btnRenunciar.setEnabled(activarRenuncia);
-
-        // Indica al tablero quién puede mover (si quieres)
-        tablero.setBloqueado(!turnoNegras); // ejemplo básico
-    }
-
-    private void onRenunciar() {
-        int r = JOptionPane.showConfirmDialog(this,
-                "¿Deseas renunciar? Tu rival ganará la partida.",
-                "Confirmar renuncia", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-        if (r == JOptionPane.YES_OPTION) {
-            finDePartida(turnoActual == Turno.NEGRAS ? blanco : negro);
+        // Icono del libro (si no existe, se deja texto 📖)
+        try {
+            URL u = getClass().getResource(RUTA_LIBRO);
+            if (u != null) {
+                Image img = ImageIO.read(u);
+                btnLibro.setIcon(new ImageIcon(img.getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
+            } else {
+                btnLibro.setText("📖");
+            }
+        } catch (Exception e) {
+            btnLibro.setText("📖");
         }
+
+        btnLibro.addActionListener(e -> mostrarStats());
     }
 
-    private void onLibro(ActionEvent e) {
-        // Muestra un overlay simple con un panel (luego pegas la imagen que me enviarás)
-        JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(this), "Estadísticas", Dialog.ModalityType.MODELESS);
-        JPanel p = new JPanel();
-        p.setPreferredSize(new Dimension(600, 380));
-        p.add(new JLabel("Aquí irá la IMAGEN con ataque/vida/escudo de cada personaje."));
-        dlg.setContentPane(p);
-        dlg.pack();
-        dlg.setLocationRelativeTo(this);
-        dlg.setVisible(true);
+    private void cargarImagenStats() {
+        try {
+            URL u = getClass().getResource(RUTA_STATS);
+            if (u != null) {
+                imgStats = ImageIO.read(u);
+            }
+        } catch (Exception ignored) {}
     }
 
-    private void finDePartida(Usuario ganador) {
-        timer.stop();
-        JOptionPane.showMessageDialog(this,
-                "¡Ganador: " + ganador.getNombreUsuario() + "!",
-                "Partida terminada", JOptionPane.INFORMATION_MESSAGE);
-        // aquí podrías actualizar estadísticas/puntos en gestor/usuarios
+    private void mostrarStats() {
+        if (imgStats == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Agrega tu imagen de stats en: " + RUTA_STATS,
+                    "Imagen no encontrada", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        // Escalar imagen a un tamaño más pequeño (por ejemplo, 60% del tamaño original)
+        int ancho = imgStats.getWidth() / 2;
+        int alto  = imgStats.getHeight() / 2;
+        Image imgEscalada = imgStats.getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);
+
+        // Crear etiqueta centrada con la imagen
+        JLabel lbl = new JLabel(new ImageIcon(imgEscalada));
+        lbl.setHorizontalAlignment(SwingConstants.CENTER);
+        lbl.setVerticalAlignment(SwingConstants.CENTER);
+        lbl.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Crear panel contenedor centrado con fondo semitransparente opcional
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(new Color(0, 0, 0, 200));
+        panel.add(lbl);
+
+        // Mostrar en un diálogo centrado
+        JOptionPane.showMessageDialog(
+                this,
+                panel,
+                "Estadísticas de Piezas",
+                JOptionPane.PLAIN_MESSAGE
+        );
     }
 
-    // === métodos que puede invocar tu motor de juego ===
-    public void setPiezasVivas(int negras, int blancas) {
-        this.piezasNegrasVivas = negras;
-        this.piezasBlancasVivas = blancas;
-        actualizarTurnoYControles();
+
+    // ===== Cronómetro =====
+    private void iniciarCronometro() {
+        inicioMs = System.currentTimeMillis();
+        timer = new Timer(1000, e -> actualizarTiempo());
+        timer.start();
+        actualizarTiempo();
     }
 
-    public void bloquearPorTurno(boolean bloquear) {
-        btnGirar.setEnabled(!bloquear);
-        tablero.setBloqueado(bloquear);
+    public void detenerCronometro() { if (timer != null) timer.stop(); }
+
+    private void actualizarTiempo() {
+        long trans = (System.currentTimeMillis() - inicioMs) / 1000L;
+        long min = trans / 60L;
+        long seg = trans % 60L;
+        lblTiempo.setText(String.format("%02d:%02d", min, seg));
+    }
+
+    // ===== API pública =====
+    public void setNombres(String negras, String blancas) {
+        lblNegro.setText(negras != null ? negras : "Negras");
+        lblBlanco.setText(blancas != null ? blancas : "Blancas");
+    }
+
+    /** Permite enganchar comportamientos al botón del libro si lo necesitas. */
+    public void setAccionLibro(ActionListener l) {
+        for (var ls : btnLibro.getActionListeners()) btnLibro.removeActionListener(ls);
+        configurarBotonLibro(); // vuelve a poner el default (mostrarStats)
+        btnLibro.addActionListener(l);
     }
 }

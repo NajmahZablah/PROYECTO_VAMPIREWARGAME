@@ -4,20 +4,13 @@
  */
 package Interfaz;
 
-import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Image;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import javax.imageio.ImageIO;
-import javax.swing.*;
-
 
 /**
  *
@@ -25,209 +18,191 @@ import javax.swing.*;
  */
 public class VentanaJuego extends JFrame {
 
-    // ===== Rutas (CLASSPATH) =====
-    private static final String FONDO_TABLERO = "/Interfaz/Imagenes/tablero_fondo.png";
-
-    private static final String HL_NEGRO      = "/Interfaz/Imagenes/hl_negro.png";
-    private static final String HL_BLANCO     = "/Interfaz/Imagenes/hl_blanco.png";
-    private static final String VAMPIRO_NEGRO = "/Interfaz/Imagenes/vampiro_negro.png";
-    private static final String VAMPIRO_BLANCO= "/Interfaz/Imagenes/vampiro_blanco.png";
-    private static final String MUERTE_NEGRO  = "/Interfaz/Imagenes/muerte_negro.png";
-    private static final String MUERTE_BLANCO = "/Interfaz/Imagenes/muerte_blanco.png";
+    // ==== Rutas en classpath ====
+    private static final String FONDO_TABLERO   = "/Interfaz/Imagenes/tablero_fondo.png";
+    private static final String HL_NEGRO        = "/Interfaz/Imagenes/hl_negro.png";
+    private static final String HL_BLANCO       = "/Interfaz/Imagenes/hl_blanco.png";
+    private static final String VAMPIRO_NEGRO   = "/Interfaz/Imagenes/vampiro_negro.png";
+    private static final String VAMPIRO_BLANCO  = "/Interfaz/Imagenes/vampiro_blanco.png";
+    private static final String MUERTE_NEGRO    = "/Interfaz/Imagenes/muerte_negro.png";
+    private static final String MUERTE_BLANCO   = "/Interfaz/Imagenes/muerte_blanco.png";
     // ============================
 
-    // Panel que pinta el fondo
+    // Fondo
     private final PanelFondo panelFondo = new PanelFondo();
 
-    // Tablero (6×6) sobre el fondo
+    // Contenido central en capas: tablero pintado + celdas (botones)
+    private final JLayeredPane capas = new JLayeredPane() {
+        @Override public Dimension getPreferredSize() {    // 👈 clave
+            return new Dimension(900, 600);
+        }
+    };
     private final PanelTablero panelTablero = new PanelTablero();
+    private final JButton[][] celdas = new JButton[6][6];
 
-    // Matriz de botones (celdas)
-    private final BotonCelda[][] celdas = new BotonCelda[6][6];
+    // HUD (tu PanelJuego)
+    private PanelJuego panelHUD;
 
-    // Imágenes en memoria
-    private BufferedImage imagenFondo;
-    private final Map<String, BufferedImage> imagenesPiezas = new HashMap<>();
+    // Recursos
+    private BufferedImage imgFondo;
+    private final Map<String, Image> imgs = new HashMap<>();
 
-    // Orden inicial (PDF)
     private enum Tipo { HOMBRE_LOBO, VAMPIRO, MUERTE }
 
     public VentanaJuego() {
         super("Vampire Wargame - Tablero");
         cargarRecursos();
-        configurarVentana();
-        construirTablero();
-        colocarPiezasIniciales();
+        construirUI();
+        construirCeldas();
+        // Primer layout y primer pintado cuando ya hay tamaños:
+        SwingUtilities.invokeLater(() -> {
+            relayoutCapas();      // coloca tablero y celdas
+            colocarPiezasIniciales();
+        });
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setVisible(true);
     }
 
-    // =================== Carga de recursos ===================
-
+    // ---------- recursos ----------
     private void cargarRecursos() {
         try {
-            URL uFondo = getClass().getResource(FONDO_TABLERO);
-            if (uFondo == null) throw new RuntimeException("Fondo no encontrado: " + FONDO_TABLERO);
-            imagenFondo = ImageIO.read(uFondo);
-
+            URL u = getClass().getResource(FONDO_TABLERO);
+            if (u != null) imgFondo = ImageIO.read(u);
             cargar("HL_N", HL_NEGRO);
             cargar("HL_B", HL_BLANCO);
             cargar("VA_N", VAMPIRO_NEGRO);
             cargar("VA_B", VAMPIRO_BLANCO);
             cargar("MU_N", MUERTE_NEGRO);
             cargar("MU_B", MUERTE_BLANCO);
-
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
-                    "No se pudieron cargar imágenes. Revisa rutas en VentanaJuego.\n" + e.getMessage(),
-                    "Recursos no encontrados", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error cargando imágenes: " + e.getMessage());
         }
     }
-
-    private void cargar(String clave, String ruta) throws Exception {
-        URL url = getClass().getResource(ruta);
-        if (url == null) throw new RuntimeException("Recurso no encontrado: " + ruta);
-        imagenesPiezas.put(clave, ImageIO.read(url));
+    private void cargar(String k, String ruta) throws Exception {
+        URL u = getClass().getResource(ruta);
+        if (u == null) throw new RuntimeException("Falta: " + ruta);
+        imgs.put(k, ImageIO.read(u));
     }
 
-    // =================== Construcción UI ===================
-
-    private void configurarVentana() {
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    // ---------- UI ----------
+    private void construirUI() {
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setMinimumSize(new Dimension(1024, 720));
         setLocationRelativeTo(null);
-
         setLayout(new BorderLayout());
+
+        // Fondo a pantalla completa
         panelFondo.setLayout(new GridBagLayout());
-        panelTablero.setOpaque(false);
-        panelTablero.setPreferredSize(new Dimension(720, 720));
-
+        panelFondo.setImagen(imgFondo);
         add(panelFondo, BorderLayout.CENTER);
-        panelFondo.add(panelTablero, new GridBagConstraints());
 
-        // ⬇️ Cuando el tablero tenga dimensiones válidas, redibujamos iconos
-        panelTablero.addComponentListener(new java.awt.event.ComponentAdapter() {
+        // Config capas (NO usamos setBounds aquí; BorderLayout lo gestiona)
+        capas.setOpaque(false);
+        capas.setLayout(null);              // control absoluto adentro
+        capas.add(panelTablero, JLayeredPane.DEFAULT_LAYER);
+
+        // Cuando el propio 'capas' cambie de tamaño, ajustamos tablero/celdas
+        capas.addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override public void componentResized(java.awt.event.ComponentEvent e) {
-                if (panelTablero.getWidth() > 0 && panelTablero.getHeight() > 0) {
-                    panelFondo.setImagen(imagenFondo);
-                    redibujarIconos();
-                }
+                relayoutCapas();
+                colocarPiezasIniciales();   // reescala piezas al nuevo tamaño
             }
         });
 
-        // Ya no necesitamos redibujar en resize del frame entero
+        // HUD recibe el tablero (capas) como CENTER
+        panelHUD = new PanelJuego(capas, "Jugador (Negras)", "Rival (Blancas)");
+        panelFondo.add(panelHUD, new GridBagConstraints());
     }
 
-    private void construirTablero() {
-        for (int fila = 0; fila < 6; fila++) {
-            for (int col = 0; col < 6; col++) {
-                BotonCelda boton = new BotonCelda(fila, col);
-                boton.setOpaque(false);
-                boton.setContentAreaFilled(false);
-                boton.setBorderPainted(false);
-                boton.setFocusPainted(false);
-                boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                celdas[fila][col] = boton;
-                panelTablero.add(boton);
+    private void relayoutCapas() {
+        int W = capas.getWidth();
+        int H = capas.getHeight();
+        if (W <= 0 || H <= 0) { // primer layout
+            Dimension pref = capas.getPreferredSize();
+            W = (W <= 0) ? pref.width  : W;
+            H = (H <= 0) ? pref.height : H;
+        }
+
+        panelTablero.setBounds(0, 0, W, H);
+
+        int cw = Math.max(1, W / 6);
+        int ch = Math.max(1, H / 6);
+        for (int r = 0; r < 6; r++) {
+            for (int c = 0; c < 6; c++) {
+                JButton b = celdas[r][c];
+                if (b != null) b.setBounds(c * cw, r * ch, cw, ch);
             }
         }
-        panelFondo.setImagen(imagenFondo);
-
-        // ⬇️ Diferir colocación: nos aseguramos de que ya haya tamaño
-        SwingUtilities.invokeLater(this::colocarPiezasIniciales);
+        capas.revalidate();
+        capas.repaint();
     }
 
-    // =================== Piezas iniciales ===================
 
+    private void construirCeldas() {
+        for (int r = 0; r < 6; r++) {
+            for (int c = 0; c < 6; c++) {
+                JButton b = new JButton();
+                b.setOpaque(false);
+                b.setContentAreaFilled(false);
+                b.setBorderPainted(false);
+                b.setFocusPainted(false);
+                b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                celdas[r][c] = b;
+                capas.add(b, JLayeredPane.PALETTE_LAYER);
+            }
+        }
+    }
+
+    // ---------- piezas ----------
     private void colocarPiezasIniciales() {
-        // Limpia íconos
-        for (BotonCelda[] fila : celdas) for (BotonCelda b : fila) b.setIcon(null);
+        // limpia iconos
+        for (JButton[] fila : celdas) for (JButton b : fila) b.setIcon(null);
 
-        // Fila superior (NEGRAS)
-        Tipo[] orden = {
-                Tipo.HOMBRE_LOBO, Tipo.VAMPIRO, Tipo.MUERTE,
-                Tipo.MUERTE, Tipo.VAMPIRO, Tipo.HOMBRE_LOBO
-        };
-        for (int col = 0; col < 6; col++) {
-            ponerIcono(0, col, iconoDe(orden[col], true)); // negras arriba
-        }
-        // Fila inferior (BLANCAS)
-        for (int col = 0; col < 6; col++) {
-            ponerIcono(5, col, iconoDe(orden[col], false)); // blancas abajo
-        }
+        Tipo[] orden = { Tipo.HOMBRE_LOBO, Tipo.VAMPIRO, Tipo.MUERTE,
+                         Tipo.MUERTE,      Tipo.VAMPIRO, Tipo.HOMBRE_LOBO };
+
+        for (int col = 0; col < 6; col++) ponerIcono(0, col, iconoDe(orden[col], true));   // negras arriba
+        for (int col = 0; col < 6; col++) ponerIcono(5, col, iconoDe(orden[col], false));  // blancas abajo
     }
 
-    private ImageIcon iconoDe(Tipo tipo, boolean negro) {
-        String clave;
-        switch (tipo) {
-            case HOMBRE_LOBO: clave = negro ? "HL_N" : "HL_B"; break;
-            case VAMPIRO:     clave = negro ? "VA_N" : "VA_B"; break;
-            case MUERTE:      clave = negro ? "MU_N" : "MU_B"; break;
-            default:          clave = negro ? "VA_N" : "VA_B";
-        }
-        BufferedImage img = imagenesPiezas.get(clave);
-        return escalarA(img, tamanoCelda());
-    }
+    private ImageIcon iconoDe(Tipo t, boolean negro) {
+        String k =
+            t == Tipo.HOMBRE_LOBO ? (negro ? "HL_N" : "HL_B") :
+            t == Tipo.VAMPIRO     ? (negro ? "VA_N" : "VA_B") :
+                                    (negro ? "MU_N" : "MU_B");
 
-    private Dimension tamanoCelda() {
-        int w = panelTablero.getWidth();
-        int h = panelTablero.getHeight();
-        if (w <= 0 || h <= 0) { // usar preferido como fallback
-            Dimension pref = panelTablero.getPreferredSize();
-            w = (w <= 0) ? pref.width  : w;
-            h = (h <= 0) ? pref.height : h;
-        }
-        int lado = Math.min(w / 6, h / 6);
-        if (lado <= 0) lado = 100; // valor seguro por si acaso
-        return new Dimension(lado, lado);
-    }
+        Image base = imgs.get(k);
+        if (base == null) return null;
 
-    private ImageIcon escalarA(BufferedImage img, Dimension d) {
-        if (img == null || d == null || d.width <= 0 || d.height <= 0) return null;
-        Image esc = img.getScaledInstance(d.width - 10, d.height - 10, Image.SCALE_SMOOTH);
+        int cw = Math.max(1, capas.getWidth()  / 6);
+        int ch = Math.max(1, capas.getHeight() / 6);
+        int lado = Math.max(24, Math.min(cw, ch) - 12); // padding
+        Image esc = base.getScaledInstance(lado, lado, Image.SCALE_SMOOTH);
         return new ImageIcon(esc);
     }
 
-    private void ponerIcono(int fila, int col, ImageIcon icono) {
-        if (icono == null) return;
-        celdas[fila][col].setIcon(icono);
+    private void ponerIcono(int fila, int col, ImageIcon ic) {
+        if (ic == null) return;
+        JButton b = celdas[fila][col];
+        b.setIcon(ic);
+        b.setHorizontalAlignment(SwingConstants.CENTER);
+        b.setVerticalAlignment(SwingConstants.CENTER);
     }
 
-    private void redibujarIconos() {
-    if (panelTablero.getWidth() <= 0 || panelTablero.getHeight() <= 0) return;
-    colocarPiezasIniciales();
-    panelTablero.revalidate();
-    panelTablero.repaint();
-
-    }
-
-    // =================== Celda ===================
-
-    /** Botón de celda: guarda su posición (fácil para la lógica luego). */
-    private static class BotonCelda extends JButton {
-        final int fila;
-        final int columna;
-        BotonCelda(int fila, int columna) { this.fila = fila; this.columna = columna; }
-    }
-
-    // =================== PanelFondo ===================
-
-    /** Panel que pinta el fondo escalado al tamaño del frame. */
+    // ---------- fondo ----------
     private static class PanelFondo extends JPanel {
-        private BufferedImage imagen;
-        void setImagen(BufferedImage imagen) { this.imagen = imagen; repaint(); }
+        private BufferedImage img;
+        void setImagen(BufferedImage i) { img = i; repaint(); }
         @Override protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            if (imagen != null) {
-                g.drawImage(imagen.getScaledInstance(getWidth(), getHeight(), Image.SCALE_SMOOTH), 0, 0, null);
+            if (img != null) {
+                g.drawImage(img.getScaledInstance(getWidth(), getHeight(), Image.SCALE_SMOOTH), 0, 0, null);
             }
         }
     }
 
-    // =================== main de prueba ===================
-
+    // ---------- main de prueba ----------
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            VentanaJuego v = new VentanaJuego();
-            v.setVisible(true);
-        });
+        SwingUtilities.invokeLater(VentanaJuego::new);
     }
 }
