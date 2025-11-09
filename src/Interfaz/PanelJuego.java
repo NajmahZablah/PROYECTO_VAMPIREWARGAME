@@ -176,8 +176,16 @@ public class PanelJuego extends JPanel {
         for (String tipo : tipos) {
             for (String color : colores) {
                 try {
-                    String ruta = "Interfaz/Imagenes/" + tipo + "_" + color + ".png";
-                    BufferedImage img = ImageIO.read(new File(ruta));
+                    // Intentar primero desde el paquete
+                    String ruta = "src/Interfaz/Imagenes/" + tipo + "_" + color + ".png";
+                    BufferedImage img = null;
+                    try {
+                        img = ImageIO.read(new File(ruta));
+                    } catch (Exception e1) {
+                        // Si falla, intentar ruta relativa
+                        ruta = "Interfaz/Imagenes/" + tipo + "_" + color + ".png";
+                        img = ImageIO.read(new File(ruta));
+                    }
                     
                     // Mapear a los nombres de TipoPieza
                     String keyTipo = tipo.equals("hl") ? "HOMBRE_LOBO" :
@@ -194,15 +202,23 @@ public class PanelJuego extends JPanel {
         
         // Cargar libro y ficha de stats
         try {
-            imgLibro = ImageIO.read(new File("Interfaz/Imagenes/Libro.png"));
+            imgLibro = ImageIO.read(new File("src/Interfaz/Imagenes/Libro.png"));
         } catch (Exception e) {
-            System.err.println("No se pudo cargar Libro.png: " + e.getMessage());
+            try {
+                imgLibro = ImageIO.read(new File("Interfaz/Imagenes/Libro.png"));
+            } catch (Exception e2) {
+                System.err.println("No se pudo cargar Libro.png: " + e2.getMessage());
+            }
         }
         
         try {
-            imgFichaStats = ImageIO.read(new File("Interfaz/Imagenes/Ficha_Stats.jpg"));
+            imgFichaStats = ImageIO.read(new File("src/Interfaz/Imagenes/Ficha_Stats.jpg"));
         } catch (Exception e) {
-            System.err.println("No se pudo cargar Ficha_Stats.jpg: " + e.getMessage());
+            try {
+                imgFichaStats = ImageIO.read(new File("Interfaz/Imagenes/Ficha_Stats.jpg"));
+            } catch (Exception e2) {
+                System.err.println("No se pudo cargar Ficha_Stats.jpg: " + e2.getMessage());
+            }
         }
     }
 

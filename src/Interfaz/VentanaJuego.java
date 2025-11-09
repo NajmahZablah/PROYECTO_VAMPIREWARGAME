@@ -78,6 +78,7 @@ public class VentanaJuego extends JFrame {
 
         hud.onGirarBlanco(e -> girarRuletaAlAzar(ColorJugador.BLANCO));
         hud.onGirarNegro(e -> girarRuletaAlAzar(ColorJugador.NEGRO));
+        hud.onRetirar(e -> confirmarRetiro());
 
         panelTablero.setOnClick((fila, col) -> handleClick(col, fila));
 
@@ -89,39 +90,45 @@ public class VentanaJuego extends JFrame {
     private void girarRuletaAlAzar(ColorJugador lado) {
         if (lado != turno) return;
         
-        // Simular "giro" aleatorio
-        TipoPieza[] tipos = {TipoPieza.HOMBRE_LOBO, TipoPieza.VAMPIRO, TipoPieza.NIGROMANTE};
-        Random rand = new Random();
-        TipoPieza resultado = tipos[rand.nextInt(tipos.length)];
-        
-        tipoSeleccionadoPorRuleta = resultado;
-        intentosRuletaRestantes--;
-        
-        // Mostrar resultado
-        String nombreTipo = resultado == TipoPieza.HOMBRE_LOBO ? "Hombre Lobo" :
-                           resultado == TipoPieza.VAMPIRO ? "Vampiro" : "Nigromante";
-        JOptionPane.showMessageDialog(this, 
-            "Ruleta: " + nombreTipo + "\nSelecciona tu pieza de este tipo",
-            "Resultado Ruleta", JOptionPane.INFORMATION_MESSAGE);
-        
-        // Verificar si tiene piezas de este tipo
-        if (!tienePiezaDeTipo(resultado, turno)) {
-            if (intentosRuletaRestantes > 0) {
-                JOptionPane.showMessageDialog(this, 
-                    "No tienes piezas de este tipo. Intentos restantes: " + intentosRuletaRestantes,
-                    "Sin Piezas", JOptionPane.WARNING_MESSAGE);
-                return; // Puede girar de nuevo
-            } else {
-                JOptionPane.showMessageDialog(this, 
-                    "No tienes piezas de este tipo y no quedan intentos. PIERDES EL TURNO",
-                    "Turno Perdido", JOptionPane.ERROR_MESSAGE);
-                finalizarTurno();
-                return;
+        // Abrir ventana de ruleta ANIMADA
+        new RuletaOverlay(this, turno, new RuletaOverlay.Listener() {
+            @Override 
+            public void onElegido(TipoPieza tipo) {
+                tipoSeleccionadoPorRuleta = tipo;
+                intentosRuletaRestantes--;
+                
+                // Mostrar qué se seleccionó
+                String nombreTipo = tipo == TipoPieza.HOMBRE_LOBO ? "Hombre Lobo" :
+                                   tipo == TipoPieza.VAMPIRO ? "Vampiro" : "Nigromante";
+                
+                // Verificar si tiene piezas de este tipo
+                if (!tienePiezaDeTipo(tipo, turno)) {
+                    if (intentosRuletaRestantes > 0) {
+                        JOptionPane.showMessageDialog(VentanaJuego.this, 
+                            "No tienes piezas de tipo " + nombreTipo + 
+                            ".\nIntentos restantes: " + intentosRuletaRestantes,
+                            "Sin Piezas", JOptionPane.WARNING_MESSAGE);
+                        actualizarHUD();
+                        return;
+                    } else {
+                        JOptionPane.showMessageDialog(VentanaJuego.this, 
+                            "No tienes piezas de tipo " + nombreTipo + 
+                            " y no quedan intentos.\n¡PIERDES EL TURNO!",
+                            "Turno Perdido", JOptionPane.ERROR_MESSAGE);
+                        finalizarTurno();
+                        return;
+                    }
+                }
+                
+                // Resaltar piezas válidas
+                seleccionarPiezaDeTipo(tipo, turno);
             }
-        }
-        
-        // Resaltar piezas válidas
-        seleccionarPiezaDeTipo(resultado, turno);
+            
+            @Override 
+            public void onCancel() {
+                // No hace nada si cancela
+            }
+        }).setVisible(true);
     }
 
     private boolean tienePiezaDeTipo(TipoPieza tipo, ColorJugador color) {
@@ -441,7 +448,6 @@ public class VentanaJuego extends JFrame {
     }
 
     private boolean sinObstruccion(Point desde, Point hasta) {
-        // Verifica si hay piezas entre desde y hasta (línea recta)
         int dx = Integer.compare(hasta.x - desde.x, 0);
         int dy = Integer.compare(hasta.y - desde.y, 0);
         
@@ -496,7 +502,6 @@ public class VentanaJuego extends JFrame {
     }
 
     private int contarPiezasPerdidas(ColorJugador color) {
-        // Inicia con 6 piezas principales (sin contar zombies)
         int piezasActuales = 0;
         for (int r = 0; r < N; r++) {
             for (int c = 0; c < N; c++) {
@@ -514,11 +519,13 @@ public class VentanaJuego extends JFrame {
         int piezasNegras = contarTodasLasPiezas(ColorJugador.NEGRO);
         
         if (piezasBlancas == 0) {
+            hud.detenerCronometro();
             JOptionPane.showMessageDialog(this,
                 "¡JUGADOR NEGRO HA VENCIDO!\nFELICIDADES, HAS GANADO 3 PUNTOS",
                 "Fin del Juego", JOptionPane.INFORMATION_MESSAGE);
             dispose();
         } else if (piezasNegras == 0) {
+            hud.detenerCronometro();
             JOptionPane.showMessageDialog(this,
                 "¡JUGADOR BLANCO HA VENCIDO!\nFELICIDADES, HAS GANADO 3 PUNTOS",
                 "Fin del Juego", JOptionPane.INFORMATION_MESSAGE);
@@ -537,6 +544,25 @@ public class VentanaJuego extends JFrame {
             }
         }
         return total;
+    }
+
+    private void confirmarRetiro() {
+        int respuesta = JOptionPane.showConfirmDialog(this,
+            "¿Estás seguro que deseas retirarte?\nEl jugador contrario ganará automáticamente.",
+            "Confirmar Retiro",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
+        
+        if (respuesta == JOptionPane.YES_OPTION) {
+            hud.detenerCronometro();
+            String ganador = turno == ColorJugador.BLANCO ? "NEGRO" : "BLANCO";
+            String perdedor = turno == ColorJugador.BLANCO ? "BLANCO" : "NEGRO";
+            JOptionPane.showMessageDialog(this,
+                String.format("JUGADOR %s SE HA RETIRADO\n¡FELICIDADES JUGADOR %s!\nHAS GANADO 3 PUNTOS",
+                    perdedor, ganador),
+                "Juego Terminado", JOptionPane.INFORMATION_MESSAGE);
+            dispose();
+        }
     }
 
     /* ================== INICIALIZACIÓN ================== */
@@ -562,7 +588,9 @@ public class VentanaJuego extends JFrame {
                 Celda cel = board[r][c];
                 if (cel != null) {
                     BufferedImage img = hud.imagen(cel.tipo, cel.color);
-                    if (img != null) panelTablero.setPieza(r, c, img);
+                    if (img != null) {
+                        panelTablero.setPieza(r, c, img);
+                    }
                 }
             }
         }
@@ -570,11 +598,17 @@ public class VentanaJuego extends JFrame {
 
     private void actualizarHUD() {
         hud.habilitarGiro(turno, true);
-        hud.setIntentos(turno, intentosRuletaRestantes, 
-            turno == ColorJugador.BLANCO ? 
-            (contarPiezasPerdidas(ColorJugador.BLANCO) >= 4 ? 3 : contarPiezasPerdidas(ColorJugador.BLANCO) >= 2 ? 2 : 1) :
-            (contarPiezasPerdidas(ColorJugador.NEGRO) >= 4 ? 3 : contarPiezasPerdidas(ColorJugador.NEGRO) >= 2 ? 2 : 1)
-        );
+        
+        int piezasBlancas = contarTodasLasPiezas(ColorJugador.BLANCO);
+        int piezasNegras = contarTodasLasPiezas(ColorJugador.NEGRO);
+        
+        hud.setPiezasRestantes(ColorJugador.BLANCO, piezasBlancas);
+        hud.setPiezasRestantes(ColorJugador.NEGRO, piezasNegras);
+        
+        int maxIntentos = intentosRuletaRestantes == 3 ? 3 : 
+                         intentosRuletaRestantes == 2 ? 2 : 1;
+        hud.setIntentos(turno, intentosRuletaRestantes, maxIntentos);
+        
         SwingUtilities.invokeLater(this::refrescarIconos);
     }
 
