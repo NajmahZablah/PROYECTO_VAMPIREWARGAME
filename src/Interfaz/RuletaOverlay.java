@@ -17,6 +17,10 @@ import java.awt.geom.AffineTransform;
  *
  * @author najma
  */
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 public class RuletaOverlay extends JDialog {
 
     public interface Listener {
@@ -92,14 +96,10 @@ public class RuletaOverlay extends JDialog {
                 int w = getWidth(), h = getHeight();
                 int r = Math.min(w, h) - 60;
                 int cx = w / 2, cy = h / 2;
+                int x = cx - r / 2, y = cy - r / 2;
 
                 // Guardar transformación original
                 AffineTransform original = g2.getTransform();
-                
-                // Rotar la ruleta
-                g2.rotate(Math.toRadians(anguloActual), cx, cy);
-
-                int x = cx - r / 2, y = cy - r / 2;
 
                 // Sombra de la ruleta
                 g2.setColor(new Color(0, 0, 0, 80));
@@ -134,7 +134,15 @@ public class RuletaOverlay extends JDialog {
                     g2.setStroke(new BasicStroke(2f));
                     g2.drawArc(x, y, r, r, (int) ang, (int) paso);
 
-                    // Texto del sector con efecto 3D
+                    ang += paso;
+                }
+
+                // ROTAR LA RULETA PARA EL GIRO
+                g2.rotate(Math.toRadians(anguloActual), cx, cy);
+
+                // Dibujar texto en los sectores (ahora rotará con la ruleta)
+                ang = -90;
+                for (int i = 0; i < SECTORES.length; i++) {
                     String txt = switch (SECTORES[i]) {
                         case HOMBRE_LOBO -> "LOBO";
                         case VAMPIRO -> "VAMPIRO";
@@ -144,9 +152,25 @@ public class RuletaOverlay extends JDialog {
                     
                     g2.setFont(new Font("Arial", Font.BOLD, 22));
                     FontMetrics fm = g2.getFontMetrics();
-                    double rad = Math.toRadians(ang + paso / 2);
-                    int tx = (int) (cx + (r * 0.35) * Math.cos(rad)) - fm.stringWidth(txt) / 2;
-                    int ty = (int) (cy + (r * 0.35) * Math.sin(rad)) + fm.getAscent() / 2;
+                    
+                    // Calcular posición del texto
+                    double anguloTexto = ang + paso / 2;
+                    double rad = Math.toRadians(anguloTexto);
+                    double distancia = r * 0.35;
+                    
+                    // Guardar transformación actual
+                    AffineTransform textoTransform = g2.getTransform();
+                    
+                    // Mover al centro del sector
+                    double textX = cx + distancia * Math.cos(rad);
+                    double textY = cy + distancia * Math.sin(rad);
+                    g2.translate(textX, textY);
+                    
+                    // Rotar el texto para que sea legible (perpendicular al radio)
+                    g2.rotate(rad + Math.PI / 2);
+                    
+                    int tx = -fm.stringWidth(txt) / 2;
+                    int ty = fm.getAscent() / 2;
                     
                     // Sombra del texto (efecto 3D)
                     g2.setColor(new Color(0, 0, 0, 150));
@@ -170,7 +194,10 @@ public class RuletaOverlay extends JDialog {
                     // Brillo en el texto
                     g2.setColor(new Color(255, 255, 200, 100));
                     g2.drawString(txt, tx - 1, ty - 1);
-
+                    
+                    // Restaurar transformación
+                    g2.setTransform(textoTransform);
+                    
                     ang += paso;
                 }
 
