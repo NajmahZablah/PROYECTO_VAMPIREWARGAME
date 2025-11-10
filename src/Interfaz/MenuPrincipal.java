@@ -87,18 +87,12 @@ public class MenuPrincipal extends JFrame {
         
         panelMenu.add(Box.createRigidArea(new Dimension(0, 30)));
         
-        // Info usuario
+        // Info usuario (SIN LA LÍNEA DE PUNTOS)
         JLabel lblUsuario = new JLabel("Bienvenido: " + usuarioActual.getNombreUsuario());
         lblUsuario.setFont(new Font("Arial", Font.BOLD, 22));
         lblUsuario.setForeground(new Color(200, 220, 255));
         lblUsuario.setAlignmentX(Component.LEFT_ALIGNMENT);
         panelMenu.add(lblUsuario);
-        
-        JLabel lblPuntos = new JLabel("Puntos: " + usuarioActual.getPuntos());
-        lblPuntos.setFont(new Font("Arial", Font.PLAIN, 20));
-        lblPuntos.setForeground(new Color(255, 215, 0));
-        lblPuntos.setAlignmentX(Component.LEFT_ALIGNMENT);
-        panelMenu.add(lblPuntos);
         
         panelMenu.add(Box.createRigidArea(new Dimension(0, 60)));
         

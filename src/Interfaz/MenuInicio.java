@@ -388,7 +388,7 @@ public class MenuInicio extends JFrame {
     
     public static void main(String[] args) {
         GestorUsuarios gestor = new GestorUsuarios(
-            new Cuentas.RepositorioUsuariosArchivo("usuarios.csv")
+            new Cuentas.RepositorioUsuariosMemoria()
         );
         
         SwingUtilities.invokeLater(() -> new MenuInicio(gestor).setVisible(true));
