@@ -23,7 +23,6 @@ public class HombreLobo extends Pieza {
         int diferenciaColumna = Math.abs(destino.columna - posicion.columna);
         if (diferenciaFila == 0 && diferenciaColumna == 0) return false;
 
-        // Hasta 2 casillas en cualquier dirección
         return diferenciaFila <= 2 && diferenciaColumna <= 2;
     }
 

@@ -12,19 +12,16 @@ public class Tablero {
 
     private final Pieza[][] celdas = new Pieza[6][6];
 
-    /** ¿La posición está dentro de los límites 0..5? */
     public boolean estaDentro(Posicion posicion) {
         return posicion.fila >= 0 && posicion.fila < 6
             && posicion.columna >= 0 && posicion.columna < 6;
     }
 
-    /** Devuelve la pieza en la posición (o null si está vacía). */
     public Pieza obtenerPieza(Posicion posicion) {
         if (!estaDentro(posicion)) return null;
         return celdas[posicion.fila][posicion.columna];
     }
 
-    /** Coloca una pieza en la posición dada. */
     public void colocarPieza(Posicion posicion, Pieza pieza) {
         if (!estaDentro(posicion)) {
             throw new IllegalArgumentException("Posición fuera del tablero: " + posicion);
@@ -32,7 +29,6 @@ public class Tablero {
         celdas[posicion.fila][posicion.columna] = pieza;
     }
 
-    /** Mueve una pieza desde origen a destino (destino debe estar vacío). */
     public void moverPieza(Posicion origen, Posicion destino) {
         if (!estaDentro(origen) || !estaDentro(destino)) {
             throw new IllegalArgumentException("Movimiento fuera del tablero.");
@@ -49,7 +45,6 @@ public class Tablero {
         piezaEnOrigen.setPosicion(destino);
     }
 
-    /** Muestra el tablero en consola con abreviaturas. */
     public void imprimirTablero() {
         for (int indiceFila = 0; indiceFila < 6; indiceFila++) {
             for (int indiceColumna = 0; indiceColumna < 6; indiceColumna++) {
@@ -64,9 +59,7 @@ public class Tablero {
         }
     }
 
-    // ---------------------------
-    // Función recursiva #1
-    // ---------------------------
+    // Función Recursiva
     public int contarPiezasVivas(ColorJugador colorJugador) {
         return contarPiezasVivasRecursivo(colorJugador, 0, 0);
     }

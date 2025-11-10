@@ -20,15 +20,13 @@ public class Juego {
         this.tablero = new Tablero();
     }
 
-    public Tablero getTablero() { return tablero; }
-    public Jugador getJugadorBlanco() { return jugadorBlanco; }
-    public Jugador getJugadorNegro() { return jugadorNegro; }
+    public Tablero getTablero() { 
+        return tablero; }
+    public Jugador getJugadorBlanco() { 
+        return jugadorBlanco; }
+    public Jugador getJugadorNegro() { 
+        return jugadorNegro; }
 
-    /**
-     * Coloca las piezas en la fila de cada jugador con el orden:
-     * HOMBRE LOBO – VAMPIRO – NIGROMANTE – NIGROMANTE – VAMPIRO – HOMBRE LOBO
-     * Blancas en fila 0; Negras en fila 5.
-     */
     public void iniciarPartida() {
         colocarFilaInicial(0, ColorJugador.BLANCO);
         colocarFilaInicial(5, ColorJugador.NEGRO);
@@ -50,7 +48,6 @@ public class Juego {
         }
     }
 
-    /** ¿El jugador tiene alguna pieza viva del tipo indicado? */
     public boolean jugadorTienePiezaVivaDeTipo(ColorJugador colorJugador, TipoPieza tipoPieza) {
         for (int indiceFila = 0; indiceFila < 6; indiceFila++) {
             for (int indiceColumna = 0; indiceColumna < 6; indiceColumna++) {
@@ -66,7 +63,6 @@ public class Juego {
         return false;
     }
 
-    /** Devuelve cuántas piezas vivas tiene el jugador (incluye zombies). */
     public int contarPiezasVivas(ColorJugador colorJugador) {
         return tablero.contarPiezasVivas(colorJugador);
     }

@@ -83,10 +83,10 @@ public class MenuInicio extends JFrame {
         lblSubtitulo.setBounds(200, 145, 600, 30);
         panelPrincipal.add(lblSubtitulo);
         
-        // Botones a la IZQUIERDA
+        // Botones a la izquierda
         int botonWidth = 430;
         int botonHeight = 70;
-        int xIzquierda = 40; // Posición a la izquierda
+        int xIzquierda = 40;
         
         JButton btnLogin = crearBotonAzul("LOG IN");
         btnLogin.setBounds(xIzquierda, 280, botonWidth, botonHeight);
@@ -148,8 +148,7 @@ public class MenuInicio extends JFrame {
         return btn;
     }
     
-    /* ==================== LOG IN CON FONDO OPACO Y MOSTRAR PASSWORD ==================== */
-    
+    // Log in
     private void abrirLogin() {
         // Crear diálogo con fondo opaco
         JDialog dialogo = new JDialog(this, "Iniciar Sesión", true);
@@ -164,7 +163,7 @@ public class MenuInicio extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g;
-                g2.setColor(new Color(30, 40, 60, 230)); // Semi-transparente
+                g2.setColor(new Color(30, 40, 60, 230));
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
             }
         };
@@ -251,8 +250,7 @@ public class MenuInicio extends JFrame {
         dialogo.setVisible(true);
     }
     
-    /* ==================== CREAR PLAYER CON FONDO OPACO Y MOSTRAR PASSWORD ==================== */
-    
+    // Crear Player
     private void abrirCrearPlayer() {
         JDialog dialogo = new JDialog(this, "Crear Nueva Cuenta", true);
         dialogo.setSize(560, 450);
@@ -266,7 +264,7 @@ public class MenuInicio extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g;
-                g2.setColor(new Color(30, 40, 60, 230)); // Semi-transparente
+                g2.setColor(new Color(30, 40, 60, 230));
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
             }
         };
@@ -330,7 +328,7 @@ public class MenuInicio extends JFrame {
         });
         panelContenido.add(chkMostrar);
         
-        // Info
+        // Información
         JLabel lblInfo = new JLabel("<html><center>Password: 5 caracteres<br>1 dígito, 1 especial</center></html>");
         lblInfo.setFont(new Font("Arial", Font.PLAIN, 12));
         lblInfo.setForeground(new Color(200, 200, 220));
@@ -383,9 +381,8 @@ public class MenuInicio extends JFrame {
         dialogo.setContentPane(panelContenido);
         dialogo.setVisible(true);
     }
-    
-    /* ==================== MAIN ==================== */
-    
+     
+    // Main
     public static void main(String[] args) {
         GestorUsuarios gestor = new GestorUsuarios(
             new Cuentas.RepositorioUsuariosMemoria()

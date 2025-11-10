@@ -95,8 +95,7 @@ public class VentanaJuego extends JFrame {
         actualizarHUD();
     }
 
-    /* ==================== RULETA ==================== */
-    
+    // Ruleta
     private void girarRuletaAlAzar(ColorJugador lado) {
         if (lado != turno) return;
         
@@ -147,8 +146,7 @@ public class VentanaJuego extends JFrame {
         return false;
     }
 
-    /* ==================== SELECCIÓN Y MOVIMIENTO ==================== */
-    
+    // Selección y movimiento
     private void seleccionarPiezaDeTipo(TipoPieza tipo, ColorJugador lado) {
         highlights.clear();
         piezaSeleccionada = null;
@@ -215,8 +213,7 @@ public class VentanaJuego extends JFrame {
         }
     }
 
-    /* ==================== ATAQUES ==================== */
-    
+    // Ataques
     private void elegirTipoAtaque(Point desde, Point objetivo) {
         Celda atacante = board[desde.y][desde.x];
         
@@ -365,8 +362,7 @@ public class VentanaJuego extends JFrame {
         refrescarIconos();
     }
 
-    /* ==================== MOVIMIENTO Y HELPERS ==================== */
-    
+    // Movimiento
     private void moverPieza(Point desde, Point hacia) {
         Celda src = board[desde.y][desde.x];
         board[hacia.y][hacia.x] = src;
@@ -461,8 +457,7 @@ public class VentanaJuego extends JFrame {
         return false;
     }
 
-    /* ==================== GESTIÓN DE TURNOS ==================== */
-    
+    // Gestión de turnos
     private void finalizarTurno() {
         tipoSeleccionadoPorRuleta = null;
         piezaSeleccionada = null;
@@ -560,8 +555,7 @@ public class VentanaJuego extends JFrame {
         dispose();
     }
 
-    /* ==================== INICIALIZACIÓN ==================== */
-    
+    // Inicialización
     private void colocarInicial() {
         for (int r = 0; r < N; r++) Arrays.fill(board[r], null);
 
@@ -607,8 +601,7 @@ public class VentanaJuego extends JFrame {
         SwingUtilities.invokeLater(this::refrescarIconos);
     }
 
-    /* ==================== MÉTODO ESTÁTICO PARA INICIAR DESDE MENÚ ==================== */
-    
+    // Iniciar desde el menú
     public static void iniciarDesdeMenu(Frame menuPrincipal, Usuario usuarioActual, GestorUsuarios gestor) {
         DialogoSeleccionOponente dialogo = new DialogoSeleccionOponente(menuPrincipal, usuarioActual, gestor);
         dialogo.setVisible(true);

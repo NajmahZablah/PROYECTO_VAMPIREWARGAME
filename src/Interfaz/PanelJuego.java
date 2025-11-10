@@ -22,9 +22,6 @@ import java.util.Map;
  *
  * @author najma
  */
-/* ============================================================================
-   ARCHIVO: PanelJuego.java
-   ============================================================================ */
 public class PanelJuego extends JPanel {
     private final PanelTablero tablero;
     private final Map<String, BufferedImage> imagenes = new HashMap<>();

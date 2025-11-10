@@ -9,6 +9,7 @@ package Cuentas;
  * @author najma
  */
 public class EstadisticaCuenta {
+    
     private int partidasGanadas;
     private int partidasPerdidas;
 

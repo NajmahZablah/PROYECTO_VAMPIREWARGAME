@@ -30,7 +30,6 @@ public class Vampiro extends Pieza {
                 && esAdyacente(this.posicion, objetivo);
     }
 
-    /** Quita 1 vida al objetivo adyacente y cura 1 al vampiro (hasta el máximo). */
     public InformeDanio succionarSangre(Tablero tablero, Posicion objetivo) {
         if (!puedeAtacar(tablero, objetivo)) {
             throw new IllegalArgumentException("Succionar sangre requiere objetivo enemigo adyacente.");

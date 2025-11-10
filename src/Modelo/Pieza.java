@@ -10,7 +10,6 @@ package Modelo;
  */
 public abstract class Pieza {
     
-    // Atributos comunes
     protected int vidaMaxima;
     protected int vida;
     protected int escudo;
@@ -31,7 +30,6 @@ public abstract class Pieza {
         this.ataque = ataque;
     }
 
-    // Getters básicos
     public ColorJugador getColorJugador() { return colorJugador; }
     public TipoPieza getTipoPieza() { return tipoPieza; }
     public Posicion getPosicion() { return posicion; }
@@ -42,7 +40,6 @@ public abstract class Pieza {
     public int getEscudo() { return escudo; }
     public int getAtaque() { return ataque; }
 
-    /** Abreviatura para imprimir en tablero de texto. */
     public String getAbreviatura() {
         switch (tipoPieza) {
             case HOMBRE_LOBO: return "HL";
@@ -53,11 +50,9 @@ public abstract class Pieza {
         }
     }
 
-    // Contratos a implementar por cada pieza concreta
     public abstract boolean puedeMover(Tablero tablero, Posicion destino);
     public abstract boolean puedeAtacar(Tablero tablero, Posicion objetivo);
 
-    /** Ataque normal (adyacente). Las subclases pueden sobrescribir si requieren. */
     public InformeDanio atacar(Tablero tablero, Posicion objetivo) {
         if (!puedeAtacar(tablero, objetivo)) {
             throw new IllegalArgumentException("Ataque inválido: objetivo no permitido o fuera de alcance.");
@@ -69,7 +64,6 @@ public abstract class Pieza {
         return piezaEnemiga.recibirDanio(this.ataque, TipoDanio.NORMAL);
     }
 
-    /** Aplica el daño considerando el tipo de daño. */
     public InformeDanio recibirDanio(int cantidad, TipoDanio tipoDanio) {
         int escudoPerdido = 0;
         int vidaPerdida = 0;
@@ -106,7 +100,6 @@ public abstract class Pieza {
         return new InformeDanio(escudoPerdido, vidaPerdida, !viva);
     }
 
-    /** ¿Dos posiciones son adyacentes (incluye diagonales)? */
     protected boolean esAdyacente(Posicion origen, Posicion destino) {
         int diferenciaFila = Math.abs(origen.fila - destino.fila);
         int diferenciaColumna = Math.abs(origen.columna - destino.columna);

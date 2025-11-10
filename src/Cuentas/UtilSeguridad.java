@@ -14,16 +14,13 @@ import java.util.regex.Pattern;
  */
 public class UtilSeguridad {
 
-    // EXACTAMENTE 5 caracteres, con al menos 1 dígito y 1 caracter especial.
     private static final Pattern REGEX_CONTRASENA =
             Pattern.compile("^(?=(?:.*\\d){1,})(?=(?:.*[^\\w\\s]){1,}).{5}$");
 
-    /** Valida la contraseña según la regla del proyecto. */
     public static boolean validarContrasena(String contrasena) {
         return contrasena != null && REGEX_CONTRASENA.matcher(contrasena).matches();
     }
 
-    /** Calcula el hash SHA-256 de un texto. */
     public static String hashSHA256(String texto) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -36,7 +33,6 @@ public class UtilSeguridad {
         }
     }
 
-    /** Compara un texto plano contra un hash esperado. */
     public static boolean comprobarPassword(String textoPlano, String hashEsperado) {
         return hashSHA256(textoPlano).equals(hashEsperado);
     }

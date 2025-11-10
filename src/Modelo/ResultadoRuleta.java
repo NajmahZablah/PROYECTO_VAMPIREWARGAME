@@ -9,6 +9,7 @@ package Modelo;
  * @author najma
  */
 public class ResultadoRuleta {
+    
     private final ColorJugador color;
     private final TipoPieza tipo;
     private final long timestampMs;

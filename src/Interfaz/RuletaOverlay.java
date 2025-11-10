@@ -17,10 +17,6 @@ import java.awt.geom.AffineTransform;
  *
  * @author najma
  */
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 public class RuletaOverlay extends JDialog {
 
     public interface Listener {
@@ -41,7 +37,7 @@ public class RuletaOverlay extends JDialog {
     };
 
     public RuletaOverlay(Window owner, ColorJugador turno, Listener listener) {
-        super(owner, "🎰 Ruleta de la Suerte", ModalityType.APPLICATION_MODAL);
+        super(owner, "Ruleta de la Suerte", ModalityType.APPLICATION_MODAL);
         this.listener = listener;
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -137,10 +133,10 @@ public class RuletaOverlay extends JDialog {
                     ang += paso;
                 }
 
-                // ROTAR LA RULETA PARA EL GIRO
+                // Rotación de la ruleta
                 g2.rotate(Math.toRadians(anguloActual), cx, cy);
 
-                // Dibujar texto en los sectores (ahora rotará con la ruleta)
+                // Dibujar texto en los sectores
                 ang = -90;
                 for (int i = 0; i < SECTORES.length; i++) {
                     String txt = switch (SECTORES[i]) {
@@ -166,13 +162,13 @@ public class RuletaOverlay extends JDialog {
                     double textY = cy + distancia * Math.sin(rad);
                     g2.translate(textX, textY);
                     
-                    // Rotar el texto para que sea legible (perpendicular al radio)
+                    // Rotar el texto para que sea legible
                     g2.rotate(rad + Math.PI / 2);
                     
                     int tx = -fm.stringWidth(txt) / 2;
                     int ty = fm.getAscent() / 2;
                     
-                    // Sombra del texto (efecto 3D)
+                    // Sombra del texto
                     g2.setColor(new Color(0, 0, 0, 150));
                     g2.drawString(txt, tx + 2, ty + 2);
                     
@@ -222,7 +218,7 @@ public class RuletaOverlay extends JDialog {
                 // Restaurar transform para dibujar el puntero fijo
                 g2.setTransform(original);
 
-                // PUNTERO FIJO (flecha mejorada)
+                // Puntero fijo
                 int px = cx, py = cy - r/2 - 35;
                 Polygon flecha = new Polygon();
                 flecha.addPoint(px, py);

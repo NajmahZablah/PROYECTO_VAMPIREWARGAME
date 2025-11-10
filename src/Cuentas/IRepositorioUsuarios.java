@@ -11,6 +11,7 @@ import java.util.List;
  * @author najma
  */
 public interface IRepositorioUsuarios {
+    
     // Usuarios
     List<Usuario> cargarTodos();
     void guardarTodos(List<Usuario> usuarios);

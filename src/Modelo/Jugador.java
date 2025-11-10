@@ -19,8 +19,12 @@ public class Jugador {
         this.colorJugador = colorJugador;
     }
 
-    public String getNombreUsuario() { return nombreUsuario; }
-    public ColorJugador getColorJugador() { return colorJugador; }
-    public int getPuntos() { return puntos; }
-    public void sumarPuntos(int cantidad) { puntos += cantidad; }
+    public String getNombreUsuario() { 
+        return nombreUsuario; }
+    public ColorJugador getColorJugador() { 
+        return colorJugador; }
+    public int getPuntos() { 
+        return puntos; }
+    public void sumarPuntos(int cantidad) { 
+        puntos += cantidad; }
 }

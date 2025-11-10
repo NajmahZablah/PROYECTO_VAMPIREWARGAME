@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class GestorUsuarios {
 
     private final IRepositorioUsuarios repo;
-    private final Map<String, Usuario> indice; // en memoria por nombre
+    private final Map<String, Usuario> indice;
 
     public GestorUsuarios(IRepositorioUsuarios repo) {
         this.repo = repo;
@@ -24,9 +24,8 @@ public class GestorUsuarios {
             indice.put(u.getNombreUsuario().toLowerCase(Locale.ROOT), u);
         }
     }
-
-    // ========== Registro / Login ==========
-
+    
+    // Registro - Log in
     public boolean registrarUsuario(String nombreUsuario, String contrasena) {
         if (nombreUsuario == null || nombreUsuario.trim().isEmpty()) return false;
         if (!UtilSeguridad.validarContrasena(contrasena)) return false;
@@ -49,8 +48,7 @@ public class GestorUsuarios {
         return u;
     }
 
-    // ========== Cuenta ==========
-
+    // Cuenta
     public boolean cambiarPassword(Usuario usuario, String passwordActual, String passwordNueva) {
         if (usuario == null) return false;
         if (!UtilSeguridad.comprobarPassword(passwordActual, usuario.getHashPassword())) return false;
@@ -68,9 +66,8 @@ public class GestorUsuarios {
         repo.eliminar(usuario.getNombreUsuario());
     }
 
-    // ========== Juego / Puntos / Estadística ==========
+    // Juego, puntos y estadísticas
 
-    /** Llama esto al finalizar una partida. Suma puntos y registra log. */
     public void registrarResultadoPartida(Usuario usuario, boolean gano, boolean retiroDelRival) {
         if (usuario == null) return;
         if (gano) {
@@ -87,7 +84,6 @@ public class GestorUsuarios {
                 ts() + " Resultado: " + detalle + " | Puntos=" + usuario.getPuntos());
     }
 
-    /** Ranking por puntos (desc). */
     public List<Usuario> obtenerRankingPorPuntos() {
         return indice.values().stream()
                 .sorted(Comparator.comparingInt(Usuario::getPuntos).reversed()
@@ -95,12 +91,9 @@ public class GestorUsuarios {
                 .collect(Collectors.toList());
     }
 
-    /** Últimos N logs del usuario (máximo N; si N<=0 devuelve todos). */
     public List<String> obtenerLogs(String nombreUsuario, int max) {
         return repo.leerLogs(nombreUsuario, max);
     }
-
-    // ========== Helpers ==========
 
     public Usuario obtener(String nombreUsuario) {
         if (nombreUsuario == null) return null;

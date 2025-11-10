@@ -30,7 +30,6 @@ public class Nigromante extends Pieza {
                 && esAdyacente(this.posicion, objetivo);
     }
 
-    /** Ataque especial con lanza (ignora escudo, daño/2) a 2 casillas como máximo. */
     public InformeDanio atacarConLanza(Tablero tablero, Posicion objetivo) {
         if (!tablero.estaDentro(objetivo)) {
             throw new IllegalArgumentException("Objetivo fuera del tablero para ataque con lanza.");
@@ -49,7 +48,6 @@ public class Nigromante extends Pieza {
         return enemigo.recibirDanio(this.ataque, TipoDanio.ATAQUE_LANZA);
     }
 
-    /** Invoca un zombie propio en una casilla vacía del tablero. */
     public void invocarZombie(Tablero tablero, Posicion destinoZombie) {
         if (!tablero.estaDentro(destinoZombie)) {
             throw new IllegalArgumentException("Posición fuera del tablero para invocar zombie.");
@@ -62,7 +60,6 @@ public class Nigromante extends Pieza {
         tablero.colocarPieza(destinoZombie, nuevoZombie);
     }
 
-    /** Ataque a través de un zombie propio adyacente al objetivo (daño 1 directo). */
     public InformeDanio atacarATravesDeZombie(Tablero tablero, Posicion objetivo) {
         if (!tablero.estaDentro(objetivo)) {
             throw new IllegalArgumentException("Objetivo fuera del tablero.");
@@ -77,7 +74,6 @@ public class Nigromante extends Pieza {
         return enemigo.recibirDanio(1, TipoDanio.ATAQUE_ZOMBIE);
     }
 
-    /** Revisa las 8 casillas vecinas del objetivo en busca de un zombie propio. */
     private boolean hayZombiePropioAdyacente(Tablero tablero, Posicion objetivo) {
         for (int desplazamientoFila = -1; desplazamientoFila <= 1; desplazamientoFila++) {
             for (int desplazamientoColumna = -1; desplazamientoColumna <= 1; desplazamientoColumna++) {

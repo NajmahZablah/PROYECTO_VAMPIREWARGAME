@@ -100,7 +100,7 @@ public class DialogoSeleccionOponente extends JDialog {
         
         grupoColor.add(rbBlancas);
         grupoColor.add(rbNegras);
-        rbBlancas.setSelected(true); // Por defecto blancas
+        rbBlancas.setSelected(true);
 
         JPanel panelRadios = new JPanel(new GridLayout(2, 1, 5, 10));
         panelRadios.setBackground(new Color(30, 35, 45));

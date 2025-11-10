@@ -19,7 +19,6 @@ public final class Posicion {
         this.columna = columna;
     }
 
-    /** Devuelve una nueva posición desplazada respecto a la actual. */
     public Posicion trasladar(int desplazamientoFila, int desplazamientoColumna) {
         return new Posicion(this.fila + desplazamientoFila, this.columna + desplazamientoColumna);
     }

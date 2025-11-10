@@ -31,7 +31,7 @@ public class MenuPrincipal extends JFrame {
         this.gestorUsuarios = gestor;
         
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // PANTALLA COMPLETA
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setUndecorated(false);
         
         cargarFondo();
@@ -87,7 +87,7 @@ public class MenuPrincipal extends JFrame {
         
         panelMenu.add(Box.createRigidArea(new Dimension(0, 30)));
         
-        // Info usuario (SIN LA LÍNEA DE PUNTOS)
+        // Info usuario
         JLabel lblUsuario = new JLabel("Bienvenido: " + usuarioActual.getNombreUsuario());
         lblUsuario.setFont(new Font("Arial", Font.BOLD, 22));
         lblUsuario.setForeground(new Color(200, 220, 255));
@@ -96,7 +96,7 @@ public class MenuPrincipal extends JFrame {
         
         panelMenu.add(Box.createRigidArea(new Dimension(0, 60)));
         
-        // Botones (todos azules excepto LOG OUT)
+        // Botones
         JButton btnJugar = crearBotonMenu("JUGAR VAMPIRE WARGAME");
         btnJugar.addActionListener(e -> verificarYJugar());
         panelMenu.add(btnJugar);
@@ -181,9 +181,8 @@ public class MenuPrincipal extends JFrame {
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return btn;
     }
-    
-    /* ==================== JUGAR ==================== */
-    
+     
+    // Jugar
     private void verificarYJugar() {
         List<Usuario> posiblesOponentes = gestorUsuarios.obtenerRankingPorPuntos()
             .stream()
@@ -202,8 +201,7 @@ public class MenuPrincipal extends JFrame {
         VentanaJuego.iniciarDesdeMenu(this, usuarioActual, gestorUsuarios);
     }
     
-    /* ==================== MI CUENTA CON DISEÑO MEJORADO ==================== */
-    
+    // Mi cuenta
     private void abrirMiCuenta() {
         JDialog dialogoCuenta = new JDialog(this, "Mi Cuenta", true);
         dialogoCuenta.setSize(600, 550);
@@ -415,8 +413,7 @@ public class MenuPrincipal extends JFrame {
         }
     }
     
-    /* ==================== REPORTES CON DISEÑO MEJORADO ==================== */
-    
+    // Reportes
     private void abrirReportes() {
         JDialog dialogoReportes = new JDialog(this, "Reportes", true);
         dialogoReportes.setSize(750, 600);
@@ -531,8 +528,7 @@ public class MenuPrincipal extends JFrame {
         return panel;
     }
     
-    /* ==================== LOG OUT ==================== */
-    
+    // Log out
     private void cerrarSesion() {
         int opcion = JOptionPane.showConfirmDialog(this,
             "¿Deseas cerrar sesión?", "Confirmar", JOptionPane.YES_NO_OPTION);
@@ -543,8 +539,6 @@ public class MenuPrincipal extends JFrame {
         }
     }
     
-    /* ==================== HELPERS ==================== */
-    
     private void mostrarDialogoInfo(String titulo, String mensaje) {
         JOptionPane.showMessageDialog(this, mensaje, titulo, JOptionPane.INFORMATION_MESSAGE);
     }
@@ -552,8 +546,6 @@ public class MenuPrincipal extends JFrame {
     private void mostrarDialogoError(Component padre, String mensaje) {
         JOptionPane.showMessageDialog(padre, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
-    
-    /* ==================== MÉTODO ESTÁTICO ==================== */
     
     public static void mostrar(Usuario usuario, GestorUsuarios gestor) {
         SwingUtilities.invokeLater(() -> new MenuPrincipal(usuario, gestor).setVisible(true));

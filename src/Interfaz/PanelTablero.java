@@ -17,9 +17,6 @@ import java.util.Set;
  *
  * @author najma
  */
-/* ============================================================================
-   ARCHIVO: PanelTablero.java
-   ============================================================================ */
 public class PanelTablero extends JPanel {
 
     public interface ClickListener {
@@ -113,12 +110,10 @@ public class PanelTablero extends JPanel {
         
         recomputeGeometry();
 
-        // Dibujar fondo de imagen escalado
         if (fondoTablero != null) {
             g2.drawImage(fondoTablero, 0, 0, getWidth(), getHeight(), null);
         }
 
-        // Tablero con opacidad (60% para ver mejor el fondo)
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f));
         
         // Casillas alternadas
@@ -132,7 +127,6 @@ public class PanelTablero extends JPanel {
             }
         }
 
-        // Restaurar opacidad completa
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 
         // Highlights

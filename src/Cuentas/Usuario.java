@@ -12,9 +12,10 @@ import java.time.format.DateTimeFormatter;
  * @author najma
  */
 public class Usuario {
+    
     private final String nombreUsuario;
     private String hashPassword;
-    private long fechaIngresoEpoch;   // epoch seconds
+    private long fechaIngresoEpoch;
     private boolean activo;
     private int puntos;
     private final EstadisticaCuenta estadistica;
