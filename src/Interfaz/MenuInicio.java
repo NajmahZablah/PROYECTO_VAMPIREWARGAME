@@ -156,6 +156,7 @@ public class MenuInicio extends JFrame {
         dialogo.setSize(520, 320);
         dialogo.setLocationRelativeTo(this);
         dialogo.setUndecorated(true);
+        dialogo.setBackground(new Color(0, 0, 0, 0));
         
         // Panel con fondo semi-transparente
         JPanel panelContenido = new JPanel() {
@@ -257,6 +258,7 @@ public class MenuInicio extends JFrame {
         dialogo.setSize(560, 450);
         dialogo.setLocationRelativeTo(this);
         dialogo.setUndecorated(true);
+        dialogo.setBackground(new Color(0, 0, 0, 0));
         
         // Panel con fondo semi-transparente
         JPanel panelContenido = new JPanel() {

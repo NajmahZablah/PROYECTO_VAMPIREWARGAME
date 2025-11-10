@@ -82,13 +82,13 @@ public class RuletaOverlay extends JDialog {
                     g2.drawArc(x, y, r, r, (int) ang, (int) paso);
 
                     String txt = switch (SECTORES[i]) {
-                        case HOMBRE_LOBO -> "HL";
-                        case VAMPIRO -> "VA";
-                        case NIGROMANTE -> "NI";
+                        case HOMBRE_LOBO -> "HombreLobo";
+                        case VAMPIRO -> "Vampiro";
+                        case NIGROMANTE -> "Muerte";
                         default -> "?";
                     };
                     
-                    g2.setFont(new Font("Arial", Font.BOLD, 36));
+                    g2.setFont(new Font("Arial", Font.BOLD, 16));
                     FontMetrics fm = g2.getFontMetrics();
                     double rad = Math.toRadians(ang + paso / 2);
                     int tx = (int) (cx + (r * 0.32) * Math.cos(rad)) - fm.stringWidth(txt) / 2;
@@ -125,7 +125,7 @@ public class RuletaOverlay extends JDialog {
         panelRueda.setPreferredSize(new Dimension(500, 500));
         add(panelRueda, BorderLayout.CENTER);
 
-        JButton btnStop = new JButton("⏸ STOP");
+        JButton btnStop = new JButton("STOP!");
         btnStop.setFont(new Font("Arial", Font.BOLD, 32));
         btnStop.setBackground(new Color(220, 50, 50));
         btnStop.setForeground(Color.WHITE);

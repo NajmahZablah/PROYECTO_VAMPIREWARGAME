@@ -74,7 +74,7 @@ public class PanelJuego extends JPanel {
             Color.LIGHT_GRAY : 
             new Color(220, 220, 255));
         
-        JButton btnGirar = new JButton("🎰 GIRAR RULETA");
+        JButton btnGirar = new JButton("GIRAR RULETA");
         btnGirar.setFont(new Font("Arial", Font.BOLD, 16));
         btnGirar.setBackground(new Color(60, 100, 180));
         btnGirar.setForeground(Color.WHITE);
@@ -116,7 +116,7 @@ public class PanelJuego extends JPanel {
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         panel.setPreferredSize(new Dimension(200, 0));
         
-        lblCronometro = new JLabel("⏱ 00:00");
+        lblCronometro = new JLabel("00:00");
         lblCronometro.setFont(new Font("Monospaced", Font.BOLD, 24));
         lblCronometro.setForeground(new Color(100, 255, 100));
         lblCronometro.setAlignmentX(Component.CENTER_ALIGNMENT);
