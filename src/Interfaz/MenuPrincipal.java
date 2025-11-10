@@ -547,6 +547,7 @@ public class MenuPrincipal extends JFrame {
         JOptionPane.showMessageDialog(padre, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
     
+    // Método Estático
     public static void mostrar(Usuario usuario, GestorUsuarios gestor) {
         SwingUtilities.invokeLater(() -> new MenuPrincipal(usuario, gestor).setVisible(true));
     }
