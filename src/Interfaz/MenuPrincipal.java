@@ -19,10 +19,6 @@ import java.util.stream.Collectors;
  *
  * @author najma
  */
-/* ============================================================================
-ARCHIVO 2: MenuPrincipal.java
-Menú principal después del login
-============================================================================ */
 public class MenuPrincipal extends JFrame {
     
     private final Usuario usuarioActual;
@@ -35,9 +31,8 @@ public class MenuPrincipal extends JFrame {
         this.gestorUsuarios = gestor;
         
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(800, 700);
-        setLocationRelativeTo(null);
-        setResizable(false);
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // PANTALLA COMPLETA
+        setUndecorated(false);
         
         cargarFondo();
         inicializarComponentes();
@@ -65,8 +60,8 @@ public class MenuPrincipal extends JFrame {
                 } else {
                     Graphics2D g2 = (Graphics2D) g;
                     GradientPaint gradient = new GradientPaint(
-                        0, 0, new Color(10, 15, 30),
-                        0, getHeight(), new Color(30, 45, 80)
+                        0, 0, new Color(10, 20, 40),
+                        0, getHeight(), new Color(30, 50, 90)
                     );
                     g2.setPaint(gradient);
                     g2.fillRect(0, 0, getWidth(), getHeight());
@@ -74,86 +69,122 @@ public class MenuPrincipal extends JFrame {
             }
         };
         
-        panelPrincipal.setLayout(null);
+        panelPrincipal.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        
+        // Panel lateral izquierdo con menú
+        JPanel panelMenu = new JPanel();
+        panelMenu.setLayout(new BoxLayout(panelMenu, BoxLayout.Y_AXIS));
+        panelMenu.setOpaque(false);
+        panelMenu.setBorder(BorderFactory.createEmptyBorder(80, 60, 80, 60));
         
         // Título
         JLabel lblTitulo = new JLabel("Vampire Wargame");
-        lblTitulo.setFont(new Font("Serif", Font.BOLD, 48));
-        lblTitulo.setForeground(new Color(220, 220, 255));
-        lblTitulo.setBounds(150, 50, 500, 60);
-        lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
-        panelPrincipal.add(lblTitulo);
+        lblTitulo.setFont(new Font("Serif", Font.BOLD, 52));
+        lblTitulo.setForeground(new Color(240, 240, 255));
+        lblTitulo.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panelMenu.add(lblTitulo);
+        
+        panelMenu.add(Box.createRigidArea(new Dimension(0, 30)));
         
         // Info usuario
-        JLabel lblBienvenida = new JLabel("Bienvenido: " + usuarioActual.getNombreUsuario());
-        lblBienvenida.setFont(new Font("Arial", Font.BOLD, 18));
-        lblBienvenida.setForeground(new Color(200, 220, 255));
-        lblBienvenida.setBounds(250, 120, 300, 25);
-        lblBienvenida.setHorizontalAlignment(SwingConstants.CENTER);
-        panelPrincipal.add(lblBienvenida);
+        JLabel lblUsuario = new JLabel("Bienvenido: " + usuarioActual.getNombreUsuario());
+        lblUsuario.setFont(new Font("Arial", Font.BOLD, 22));
+        lblUsuario.setForeground(new Color(200, 220, 255));
+        lblUsuario.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panelMenu.add(lblUsuario);
         
         JLabel lblPuntos = new JLabel("Puntos: " + usuarioActual.getPuntos());
-        lblPuntos.setFont(new Font("Arial", Font.PLAIN, 16));
+        lblPuntos.setFont(new Font("Arial", Font.PLAIN, 20));
         lblPuntos.setForeground(new Color(255, 215, 0));
-        lblPuntos.setBounds(250, 150, 300, 20);
-        lblPuntos.setHorizontalAlignment(SwingConstants.CENTER);
-        panelPrincipal.add(lblPuntos);
+        lblPuntos.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panelMenu.add(lblPuntos);
         
-        // Botones
-        int botonWidth = 350;
-        int botonHeight = 60;
-        int xCentro = (800 - botonWidth) / 2;
-        int yInicio = 220;
-        int espaciado = 20;
+        panelMenu.add(Box.createRigidArea(new Dimension(0, 60)));
         
-        JButton btnJugar = crearBoton("JUGAR VAMPIRE WARGAME", new Color(60, 100, 180));
-        btnJugar.setBounds(xCentro, yInicio, botonWidth, botonHeight);
+        // Botones (todos azules excepto LOG OUT)
+        JButton btnJugar = crearBotonMenu("JUGAR VAMPIRE WARGAME");
         btnJugar.addActionListener(e -> verificarYJugar());
-        panelPrincipal.add(btnJugar);
+        panelMenu.add(btnJugar);
+        panelMenu.add(Box.createRigidArea(new Dimension(0, 25)));
         
-        JButton btnMiCuenta = crearBoton("MI CUENTA", new Color(80, 120, 160));
-        btnMiCuenta.setBounds(xCentro, yInicio + (botonHeight + espaciado), botonWidth, botonHeight);
+        JButton btnMiCuenta = crearBotonMenu("MI CUENTA");
         btnMiCuenta.addActionListener(e -> abrirMiCuenta());
-        panelPrincipal.add(btnMiCuenta);
+        panelMenu.add(btnMiCuenta);
+        panelMenu.add(Box.createRigidArea(new Dimension(0, 25)));
         
-        JButton btnReportes = crearBoton("REPORTES", new Color(100, 140, 180));
-        btnReportes.setBounds(xCentro, yInicio + 2 * (botonHeight + espaciado), botonWidth, botonHeight);
+        JButton btnReportes = crearBotonMenu("REPORTES");
         btnReportes.addActionListener(e -> abrirReportes());
-        panelPrincipal.add(btnReportes);
+        panelMenu.add(btnReportes);
+        panelMenu.add(Box.createRigidArea(new Dimension(0, 25)));
         
-        JButton btnLogOut = crearBoton("LOG OUT", new Color(150, 60, 60));
-        btnLogOut.setBounds(xCentro, yInicio + 3 * (botonHeight + espaciado), botonWidth, botonHeight);
+        JButton btnLogOut = crearBotonRojo("LOG OUT");
         btnLogOut.addActionListener(e -> cerrarSesion());
-        panelPrincipal.add(btnLogOut);
+        panelMenu.add(btnLogOut);
         
-        JLabel lblVersion = new JLabel("v1.0 - Proyecto Programación 2");
-        lblVersion.setFont(new Font("Arial", Font.PLAIN, 12));
-        lblVersion.setForeground(new Color(150, 150, 170));
-        lblVersion.setBounds(250, 630, 300, 20);
-        lblVersion.setHorizontalAlignment(SwingConstants.CENTER);
-        panelPrincipal.add(lblVersion);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        panelPrincipal.add(panelMenu, gbc);
         
         setContentPane(panelPrincipal);
     }
     
-    private JButton crearBoton(String texto, Color colorFondo) {
+    private JButton crearBotonMenu(String texto) {
         JButton btn = new JButton(texto);
-        btn.setFont(new Font("Arial", Font.BOLD, 18));
-        btn.setBackground(colorFondo);
+        btn.setFont(new Font("Arial", Font.BOLD, 20));
+        btn.setBackground(new Color(50, 80, 140));
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
+        btn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btn.setMaximumSize(new Dimension(450, 70));
+        btn.setPreferredSize(new Dimension(450, 70));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btn.setBackground(colorFondo.brighter());
+                btn.setBackground(new Color(70, 100, 170));
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                btn.setBackground(colorFondo);
+                btn.setBackground(new Color(50, 80, 140));
             }
         });
         
+        return btn;
+    }
+    
+    private JButton crearBotonRojo(String texto) {
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("Arial", Font.BOLD, 20));
+        btn.setBackground(new Color(140, 50, 50));
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btn.setMaximumSize(new Dimension(450, 70));
+        btn.setPreferredSize(new Dimension(450, 70));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btn.setBackground(new Color(170, 70, 70));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btn.setBackground(new Color(140, 50, 50));
+            }
+        });
+        
+        return btn;
+    }
+    
+    private JButton crearBotonAzul(String texto) {
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("Arial", Font.BOLD, 16));
+        btn.setBackground(new Color(50, 80, 140));
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return btn;
     }
     
@@ -167,123 +198,213 @@ public class MenuPrincipal extends JFrame {
             .collect(Collectors.toList());
         
         if (posiblesOponentes.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
+            mostrarDialogoInfo("Sin Oponentes", 
                 "No hay oponentes disponibles para jugar.\n\n" +
                 "Debes crear al menos otra cuenta desde el menú de inicio\n" +
-                "para poder iniciar una partida.",
-                "Sin Oponentes",
-                JOptionPane.WARNING_MESSAGE);
+                "para poder iniciar una partida.");
             return;
         }
         
         VentanaJuego.iniciarDesdeMenu(this, usuarioActual, gestorUsuarios);
     }
     
-    /* ==================== MI CUENTA ==================== */
+    /* ==================== MI CUENTA CON DISEÑO MEJORADO ==================== */
     
     private void abrirMiCuenta() {
         JDialog dialogoCuenta = new JDialog(this, "Mi Cuenta", true);
-        dialogoCuenta.setSize(500, 400);
+        dialogoCuenta.setSize(600, 550);
         dialogoCuenta.setLocationRelativeTo(this);
-        dialogoCuenta.setLayout(new BorderLayout(10, 10));
+        dialogoCuenta.setUndecorated(true);
         
-        JPanel panelInfo = new JPanel();
-        panelInfo.setLayout(new BoxLayout(panelInfo, BoxLayout.Y_AXIS));
-        panelInfo.setBackground(new Color(30, 35, 50));
-        panelInfo.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+        // Panel semi-transparente
+        JPanel panelContenido = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setColor(new Color(30, 40, 60, 235));
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+            }
+        };
+        panelContenido.setOpaque(false);
+        panelContenido.setLayout(null);
+        panelContenido.setBorder(BorderFactory.createLineBorder(new Color(100, 120, 180), 3));
         
-        agregarInfoLabel(panelInfo, "Usuario:", usuarioActual.getNombreUsuario());
-        agregarInfoLabel(panelInfo, "Puntos:", String.valueOf(usuarioActual.getPuntos()));
-        agregarInfoLabel(panelInfo, "Fecha de Registro:", usuarioActual.getFechaIngresoTexto());
-        agregarInfoLabel(panelInfo, "Partidas Ganadas:", 
-            String.valueOf(usuarioActual.getEstadistica().getPartidasGanadas()));
-        agregarInfoLabel(panelInfo, "Partidas Perdidas:", 
-            String.valueOf(usuarioActual.getEstadistica().getPartidasPerdidas()));
-        agregarInfoLabel(panelInfo, "% Victorias:", 
-            String.format("%.1f%%", usuarioActual.getEstadistica().getPorcentajeVictorias()));
+        // Título
+        JLabel lblTitulo = new JLabel("Mi Cuenta", SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 28));
+        lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setBounds(0, 25, 600, 35);
+        panelContenido.add(lblTitulo);
         
-        dialogoCuenta.add(panelInfo, BorderLayout.CENTER);
+        // Información del usuario
+        int yPos = 90;
+        agregarInfoLabel(panelContenido, "Usuario:", usuarioActual.getNombreUsuario(), 80, yPos);
+        yPos += 50;
+        agregarInfoLabel(panelContenido, "Puntos:", String.valueOf(usuarioActual.getPuntos()), 80, yPos);
+        yPos += 50;
+        agregarInfoLabel(panelContenido, "Fecha Registro:", usuarioActual.getFechaIngresoTexto(), 80, yPos);
+        yPos += 50;
+        agregarInfoLabel(panelContenido, "Partidas Ganadas:", 
+            String.valueOf(usuarioActual.getEstadistica().getPartidasGanadas()), 80, yPos);
+        yPos += 50;
+        agregarInfoLabel(panelContenido, "Partidas Perdidas:", 
+            String.valueOf(usuarioActual.getEstadistica().getPartidasPerdidas()), 80, yPos);
+        yPos += 50;
+        agregarInfoLabel(panelContenido, "% Victorias:", 
+            String.format("%.1f%%", usuarioActual.getEstadistica().getPorcentajeVictorias()), 80, yPos);
         
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
-        panelBotones.setBackground(new Color(30, 35, 50));
+        // Botones
+        JButton btnCambiar = crearBotonAzul("Cambiar Password");
+        btnCambiar.setBounds(80, 440, 160, 45);
+        btnCambiar.addActionListener(e -> cambiarPassword(dialogoCuenta));
+        panelContenido.add(btnCambiar);
         
-        JButton btnCambiarPassword = new JButton("Cambiar Password");
-        btnCambiarPassword.setBackground(new Color(80, 120, 180));
-        btnCambiarPassword.setForeground(Color.WHITE);
-        btnCambiarPassword.setFocusPainted(false);
-        btnCambiarPassword.addActionListener(e -> cambiarPassword(dialogoCuenta));
-        
-        JButton btnEliminarCuenta = new JButton("Eliminar Cuenta");
-        btnEliminarCuenta.setBackground(new Color(180, 60, 60));
-        btnEliminarCuenta.setForeground(Color.WHITE);
-        btnEliminarCuenta.setFocusPainted(false);
-        btnEliminarCuenta.addActionListener(e -> eliminarCuenta(dialogoCuenta));
+        JButton btnEliminar = new JButton("Eliminar Cuenta");
+        btnEliminar.setFont(new Font("Arial", Font.BOLD, 16));
+        btnEliminar.setBackground(new Color(140, 50, 50));
+        btnEliminar.setForeground(Color.WHITE);
+        btnEliminar.setFocusPainted(false);
+        btnEliminar.setBounds(260, 440, 160, 45);
+        btnEliminar.addActionListener(e -> eliminarCuenta(dialogoCuenta));
+        panelContenido.add(btnEliminar);
         
         JButton btnCerrar = new JButton("Cerrar");
+        btnCerrar.setFont(new Font("Arial", Font.BOLD, 16));
         btnCerrar.setBackground(new Color(100, 100, 120));
         btnCerrar.setForeground(Color.WHITE);
         btnCerrar.setFocusPainted(false);
+        btnCerrar.setBounds(440, 440, 100, 45);
         btnCerrar.addActionListener(e -> dialogoCuenta.dispose());
+        panelContenido.add(btnCerrar);
         
-        panelBotones.add(btnCambiarPassword);
-        panelBotones.add(btnEliminarCuenta);
-        panelBotones.add(btnCerrar);
-        
-        dialogoCuenta.add(panelBotones, BorderLayout.SOUTH);
+        dialogoCuenta.setContentPane(panelContenido);
         dialogoCuenta.setVisible(true);
     }
     
-    private void agregarInfoLabel(JPanel panel, String etiqueta, String valor) {
-        JPanel linea = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        linea.setBackground(new Color(30, 35, 50));
-        
+    private void agregarInfoLabel(JPanel panel, String etiqueta, String valor, int x, int y) {
         JLabel lblEtiqueta = new JLabel(etiqueta);
-        lblEtiqueta.setFont(new Font("Arial", Font.BOLD, 14));
-        lblEtiqueta.setForeground(new Color(200, 200, 220));
-        lblEtiqueta.setPreferredSize(new Dimension(150, 20));
+        lblEtiqueta.setFont(new Font("Arial", Font.BOLD, 16));
+        lblEtiqueta.setForeground(new Color(200, 220, 255));
+        lblEtiqueta.setBounds(x, y, 180, 30);
+        panel.add(lblEtiqueta);
         
         JLabel lblValor = new JLabel(valor);
-        lblValor.setFont(new Font("Arial", Font.PLAIN, 14));
+        lblValor.setFont(new Font("Arial", Font.PLAIN, 16));
         lblValor.setForeground(Color.WHITE);
-        
-        linea.add(lblEtiqueta);
-        linea.add(lblValor);
-        panel.add(linea);
+        lblValor.setBounds(x + 200, y, 300, 30);
+        panel.add(lblValor);
     }
     
     private void cambiarPassword(JDialog padre) {
-        JPasswordField txtActual = new JPasswordField(15);
-        JPasswordField txtNueva = new JPasswordField(15);
-        JPasswordField txtConfirmar = new JPasswordField(15);
+        JDialog dialogo = new JDialog(padre, "Cambiar Password", true);
+        dialogo.setSize(520, 380);
+        dialogo.setLocationRelativeTo(padre);
+        dialogo.setUndecorated(true);
         
-        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
-        panel.add(new JLabel("Password Actual:"));
-        panel.add(txtActual);
-        panel.add(new JLabel("Password Nueva:"));
-        panel.add(txtNueva);
-        panel.add(new JLabel("Confirmar:"));
-        panel.add(txtConfirmar);
+        JPanel panelContenido = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setColor(new Color(30, 40, 60, 235));
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+            }
+        };
+        panelContenido.setOpaque(false);
+        panelContenido.setLayout(null);
+        panelContenido.setBorder(BorderFactory.createLineBorder(new Color(100, 120, 180), 2));
         
-        int resultado = JOptionPane.showConfirmDialog(padre, panel, 
-            "Cambiar Password", JOptionPane.OK_CANCEL_OPTION);
+        JLabel lblTitulo = new JLabel("Cambiar Password", SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
+        lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setBounds(0, 25, 520, 30);
+        panelContenido.add(lblTitulo);
         
-        if (resultado == JOptionPane.OK_OPTION) {
+        // Password actual
+        JLabel lblActual = new JLabel("Password Actual:");
+        lblActual.setFont(new Font("Arial", Font.BOLD, 15));
+        lblActual.setForeground(Color.WHITE);
+        lblActual.setBounds(60, 90, 160, 30);
+        panelContenido.add(lblActual);
+        
+        JPasswordField txtActual = new JPasswordField();
+        txtActual.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtActual.setBounds(230, 90, 240, 35);
+        panelContenido.add(txtActual);
+        
+        // Password nueva
+        JLabel lblNueva = new JLabel("Password Nueva:");
+        lblNueva.setFont(new Font("Arial", Font.BOLD, 15));
+        lblNueva.setForeground(Color.WHITE);
+        lblNueva.setBounds(60, 150, 160, 30);
+        panelContenido.add(lblNueva);
+        
+        JPasswordField txtNueva = new JPasswordField();
+        txtNueva.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtNueva.setBounds(230, 150, 240, 35);
+        panelContenido.add(txtNueva);
+        
+        // Confirmar
+        JLabel lblConfirmar = new JLabel("Confirmar:");
+        lblConfirmar.setFont(new Font("Arial", Font.BOLD, 15));
+        lblConfirmar.setForeground(Color.WHITE);
+        lblConfirmar.setBounds(60, 210, 160, 30);
+        panelContenido.add(lblConfirmar);
+        
+        JPasswordField txtConfirmar = new JPasswordField();
+        txtConfirmar.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtConfirmar.setBounds(230, 210, 240, 35);
+        panelContenido.add(txtConfirmar);
+        
+        // Checkbox mostrar
+        JCheckBox chkMostrar = new JCheckBox("Mostrar");
+        chkMostrar.setFont(new Font("Arial", Font.PLAIN, 13));
+        chkMostrar.setForeground(Color.WHITE);
+        chkMostrar.setOpaque(false);
+        chkMostrar.setFocusPainted(false);
+        chkMostrar.setBounds(230, 250, 100, 25);
+        chkMostrar.addActionListener(e -> {
+            char echo = chkMostrar.isSelected() ? (char) 0 : '•';
+            txtActual.setEchoChar(echo);
+            txtNueva.setEchoChar(echo);
+            txtConfirmar.setEchoChar(echo);
+        });
+        panelContenido.add(chkMostrar);
+        
+        // Botones
+        JButton btnAceptar = crearBotonAzul("Aceptar");
+        btnAceptar.setBounds(140, 300, 110, 45);
+        btnAceptar.addActionListener(e -> {
             String actual = new String(txtActual.getPassword());
             String nueva = new String(txtNueva.getPassword());
             String confirmar = new String(txtConfirmar.getPassword());
             
             if (!nueva.equals(confirmar)) {
-                JOptionPane.showMessageDialog(padre, "Las contraseñas no coinciden");
+                mostrarDialogoError(dialogo, "Las contraseñas no coinciden");
                 return;
             }
             
             if (gestorUsuarios.cambiarPassword(usuarioActual, actual, nueva)) {
-                JOptionPane.showMessageDialog(padre, "Password cambiado exitosamente");
+                mostrarDialogoInfo("Éxito", "Password cambiado exitosamente");
+                dialogo.dispose();
             } else {
-                JOptionPane.showMessageDialog(padre, 
-                    "Error al cambiar password.\nVerifica los requisitos.");
+                mostrarDialogoError(dialogo, "Error al cambiar password.\nVerifica el password actual y los requisitos.");
             }
-        }
+        });
+        panelContenido.add(btnAceptar);
+        
+        JButton btnCancelar = new JButton("Cancelar");
+        btnCancelar.setFont(new Font("Arial", Font.BOLD, 16));
+        btnCancelar.setBackground(new Color(140, 50, 50));
+        btnCancelar.setForeground(Color.WHITE);
+        btnCancelar.setFocusPainted(false);
+        btnCancelar.setBounds(270, 300, 110, 45);
+        btnCancelar.addActionListener(e -> dialogo.dispose());
+        panelContenido.add(btnCancelar);
+        
+        dialogo.setContentPane(panelContenido);
+        dialogo.setVisible(true);
     }
     
     private void eliminarCuenta(JDialog padre) {
@@ -293,47 +414,85 @@ public class MenuPrincipal extends JFrame {
         
         if (confirmar == JOptionPane.YES_OPTION) {
             gestorUsuarios.eliminarUsuario(usuarioActual);
-            JOptionPane.showMessageDialog(padre, "Cuenta eliminada");
+            JOptionPane.showMessageDialog(padre, "Cuenta eliminada exitosamente");
             padre.dispose();
             dispose();
-            // Volver al menú de inicio
             new MenuInicio(gestorUsuarios).setVisible(true);
         }
     }
     
-    /* ==================== REPORTES ==================== */
+    /* ==================== REPORTES CON DISEÑO MEJORADO ==================== */
     
     private void abrirReportes() {
         JDialog dialogoReportes = new JDialog(this, "Reportes", true);
-        dialogoReportes.setSize(600, 500);
+        dialogoReportes.setSize(750, 600);
         dialogoReportes.setLocationRelativeTo(this);
-        dialogoReportes.setLayout(new BorderLayout());
+        dialogoReportes.setUndecorated(true);
+        
+        JPanel panelContenido = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setColor(new Color(30, 40, 60, 235));
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+            }
+        };
+        panelContenido.setOpaque(false);
+        panelContenido.setLayout(new BorderLayout(10, 10));
+        panelContenido.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(100, 120, 180), 3),
+            BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
+        
+        JLabel lblTitulo = new JLabel("Reportes", SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 28));
+        lblTitulo.setForeground(Color.WHITE);
+        panelContenido.add(lblTitulo, BorderLayout.NORTH);
         
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Ranking", crearPanelRanking());
-        tabbedPane.addTab("Mis Juegos", crearPanelLogs());
+        tabbedPane.setFont(new Font("Arial", Font.BOLD, 14));
+        tabbedPane.setBackground(new Color(40, 50, 70));
+        tabbedPane.setForeground(Color.WHITE);
+        tabbedPane.addTab("Ranking de Jugadores", crearPanelRanking());
+        tabbedPane.addTab("Mis Últimos Juegos", crearPanelLogs());
         
-        dialogoReportes.add(tabbedPane, BorderLayout.CENTER);
+        panelContenido.add(tabbedPane, BorderLayout.CENTER);
         
-        JButton btnCerrar = new JButton("Cerrar");
+        JButton btnCerrar = crearBotonAzul("Cerrar");
+        btnCerrar.setPreferredSize(new Dimension(120, 40));
         btnCerrar.addActionListener(e -> dialogoReportes.dispose());
         JPanel panelBoton = new JPanel();
+        panelBoton.setOpaque(false);
         panelBoton.add(btnCerrar);
-        dialogoReportes.add(panelBoton, BorderLayout.SOUTH);
+        panelContenido.add(panelBoton, BorderLayout.SOUTH);
         
+        dialogoReportes.setContentPane(panelContenido);
         dialogoReportes.setVisible(true);
     }
     
     private JPanel crearPanelRanking() {
         JPanel panel = new JPanel(new BorderLayout());
-        String[] columnas = {"Pos", "Usuario", "Puntos", "Ganadas", "Perdidas", "% Victoria"};
+        panel.setBackground(new Color(40, 50, 70));
+        
+        String[] columnas = {"Posición", "Usuario", "Puntos", "Ganadas", "Perdidas", "% Victoria"};
         Object[][] datos = obtenerDatosRanking();
         
         JTable tabla = new JTable(datos, columnas);
-        tabla.setRowHeight(25);
+        tabla.setFont(new Font("Arial", Font.PLAIN, 13));
+        tabla.setRowHeight(28);
         tabla.setEnabled(false);
+        tabla.setBackground(new Color(50, 60, 80));
+        tabla.setForeground(Color.WHITE);
+        tabla.setGridColor(new Color(70, 80, 100));
+        tabla.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        tabla.getTableHeader().setBackground(new Color(35, 45, 65));
+        tabla.getTableHeader().setForeground(Color.WHITE);
         
-        panel.add(new JScrollPane(tabla), BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(tabla);
+        scroll.getViewport().setBackground(new Color(50, 60, 80));
+        panel.add(scroll, BorderLayout.CENTER);
+        
         return panel;
     }
     
@@ -355,6 +514,8 @@ public class MenuPrincipal extends JFrame {
     
     private JPanel crearPanelLogs() {
         JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(40, 50, 70));
+        
         List<String> logs = gestorUsuarios.obtenerLogs(usuarioActual.getNombreUsuario(), 20);
         
         DefaultListModel<String> modelo = new DefaultListModel<>();
@@ -365,8 +526,14 @@ public class MenuPrincipal extends JFrame {
         }
         
         JList<String> lista = new JList<>(modelo);
-        lista.setFont(new Font("Monospaced", Font.PLAIN, 11));
-        panel.add(new JScrollPane(lista), BorderLayout.CENTER);
+        lista.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        lista.setBackground(new Color(50, 60, 80));
+        lista.setForeground(Color.WHITE);
+        
+        JScrollPane scroll = new JScrollPane(lista);
+        scroll.getViewport().setBackground(new Color(50, 60, 80));
+        panel.add(scroll, BorderLayout.CENTER);
+        
         return panel;
     }
     
@@ -380,6 +547,16 @@ public class MenuPrincipal extends JFrame {
             dispose();
             new MenuInicio(gestorUsuarios).setVisible(true);
         }
+    }
+    
+    /* ==================== HELPERS ==================== */
+    
+    private void mostrarDialogoInfo(String titulo, String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, titulo, JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void mostrarDialogoError(Component padre, String mensaje) {
+        JOptionPane.showMessageDialog(padre, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
     
     /* ==================== MÉTODO ESTÁTICO ==================== */
