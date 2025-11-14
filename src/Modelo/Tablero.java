@@ -59,7 +59,7 @@ public class Tablero {
         }
     }
 
-    // Función Recursiva
+    // Primera función Recursiva
     public int contarPiezasVivas(ColorJugador colorJugador) {
         return contarPiezasVivasRecursivo(colorJugador, 0, 0);
     }

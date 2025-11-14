@@ -11,7 +11,7 @@ package Modelo;
 public class Nigromante extends Pieza {
 
     public Nigromante(ColorJugador colorJugador, int vidaMaxima, int escudo, int ataque) {
-        super(colorJugador, TipoPieza.NIGROMANTE, vidaMaxima, escudo, ataque);
+        super(colorJugador, TipoPieza.NIGROMANTE, 3, 1, 4);
     }
 
     @Override
@@ -74,20 +74,53 @@ public class Nigromante extends Pieza {
         return enemigo.recibirDanio(1, TipoDanio.ATAQUE_ZOMBIE);
     }
 
+    // Segunda función recursiva
     private boolean hayZombiePropioAdyacente(Tablero tablero, Posicion objetivo) {
-        for (int desplazamientoFila = -1; desplazamientoFila <= 1; desplazamientoFila++) {
-            for (int desplazamientoColumna = -1; desplazamientoColumna <= 1; desplazamientoColumna++) {
-                if (desplazamientoFila == 0 && desplazamientoColumna == 0) continue;
-                Posicion posicionVecina = new Posicion(objetivo.fila + desplazamientoFila,
-                                                       objetivo.columna + desplazamientoColumna);
-                if (!tablero.estaDentro(posicionVecina)) continue;
-                Pieza piezaVecina = tablero.obtenerPieza(posicionVecina);
-                boolean esZombiePropio = piezaVecina != null
-                        && piezaVecina.getTipoPieza() == TipoPieza.ZOMBIE
-                        && piezaVecina.getColorJugador() == this.colorJugador;
-                if (esZombiePropio) return true;
+        return hayZombiePropioAdyacenteRecursivo(tablero, objetivo, -1, -1);
+    }
+
+    private boolean hayZombiePropioAdyacenteRecursivo(Tablero tablero, Posicion objetivo,
+                                                      int desplazamientoFila, 
+                                                      int desplazamientoColumna) {
+        
+        if (desplazamientoFila > 1) {
+            return false;
+        }
+        
+        if (desplazamientoFila == 0 && desplazamientoColumna == 0) {
+            // Avanzar a la siguiente columna
+            return hayZombiePropioAdyacenteRecursivo(tablero, objetivo, 
+                                                     desplazamientoFila, 
+                                                     desplazamientoColumna + 1);
+        }
+        
+        Posicion posicionVecina = new Posicion(
+            objetivo.fila + desplazamientoFila,
+            objetivo.columna + desplazamientoColumna
+        );
+        
+        if (tablero.estaDentro(posicionVecina)) {
+            Pieza piezaVecina = tablero.obtenerPieza(posicionVecina);
+            
+            boolean esZombiePropio = piezaVecina != null
+                    && piezaVecina.getTipoPieza() == TipoPieza.ZOMBIE
+                    && piezaVecina.getColorJugador() == this.colorJugador;
+            
+            if (esZombiePropio) {
+                return true;
             }
         }
-        return false;
+
+        int siguienteColumna = desplazamientoColumna + 1;
+        int siguienteFila = desplazamientoFila;
+        
+        if (siguienteColumna > 1) {
+            siguienteColumna = -1;
+            siguienteFila++;
+        }
+        
+        return hayZombiePropioAdyacenteRecursivo(tablero, objetivo, 
+                                                 siguienteFila, 
+                                                 siguienteColumna);
     }
 }

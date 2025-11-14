@@ -34,12 +34,12 @@ public class Juego {
 
     private void colocarFilaInicial(int numeroFila, ColorJugador colorJugador) {
         Pieza[] ordenInicial = new Pieza[] {
-            new HombreLobo(colorJugador, 6, 2, 3),
-            new Vampiro(colorJugador, 5, 1, 3),
-            new Nigromante(colorJugador, 6, 0, 4),
-            new Nigromante(colorJugador, 6, 0, 4),
-            new Vampiro(colorJugador, 5, 1, 3),
-            new HombreLobo(colorJugador, 6, 2, 3)
+            new HombreLobo(colorJugador, 5, 2, 5),
+            new Vampiro(colorJugador, 4, 5, 3),
+            new Nigromante(colorJugador, 3, 1, 4),
+            new Nigromante(colorJugador, 3, 1, 4),
+            new Vampiro(colorJugador, 4, 5, 3),
+            new HombreLobo(colorJugador, 5, 2, 5)
         };
         for (int indiceColumna = 0; indiceColumna < 6; indiceColumna++) {
             Posicion posicion = new Posicion(numeroFila, indiceColumna);

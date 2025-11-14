@@ -381,13 +381,5 @@ public class MenuInicio extends JFrame {
         dialogo.setContentPane(panelContenido);
         dialogo.setVisible(true);
     }
-     
-    // Main
-    public static void main(String[] args) {
-        GestorUsuarios gestor = new GestorUsuarios(
-            new Cuentas.RepositorioUsuariosMemoria()
-        );
-        
-        SwingUtilities.invokeLater(() -> new MenuInicio(gestor).setVisible(true));
-    }
+
 }

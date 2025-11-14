@@ -11,7 +11,7 @@ package Modelo;
 public class Vampiro extends Pieza {
 
     public Vampiro(ColorJugador colorJugador, int vidaMaxima, int escudo, int ataque) {
-        super(colorJugador, TipoPieza.VAMPIRO, vidaMaxima, escudo, ataque);
+        super(colorJugador, TipoPieza.VAMPIRO, 4, 5, 3);
     }
 
     @Override

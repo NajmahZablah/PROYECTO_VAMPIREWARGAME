@@ -3,17 +3,7 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/najma/OneDrive/Documents/NetBeansProjects/PROYECTO_VAMPIREWARGAME/src/Interfaz/MenuInicio.java</file>
-            <file>file:/C:/Users/najma/OneDrive/Documents/NetBeansProjects/PROYECTO_VAMPIREWARGAME/src/Interfaz/PanelJuego.java</file>
-            <file>file:/C:/Users/najma/OneDrive/Documents/NetBeansProjects/PROYECTO_VAMPIREWARGAME/src/Cuentas/IRepositorioUsuarios.java</file>
-            <file>file:/C:/Users/najma/OneDrive/Documents/NetBeansProjects/PROYECTO_VAMPIREWARGAME/src/Cuentas/RepositorioUsuariosMemoria.java</file>
-            <file>file:/C:/Users/najma/OneDrive/Documents/NetBeansProjects/PROYECTO_VAMPIREWARGAME/src/Cuentas/RepositorioUsuariosArchivo.java</file>
-            <file>file:/C:/Users/najma/OneDrive/Documents/NetBeansProjects/PROYECTO_VAMPIREWARGAME/src/Cuentas/GestorUsuarios.java</file>
-            <file>file:/C:/Users/najma/OneDrive/Documents/NetBeansProjects/PROYECTO_VAMPIREWARGAME/src/Cuentas/UtilSeguridad.java</file>
-            <file>file:/C:/Users/najma/OneDrive/Documents/NetBeansProjects/PROYECTO_VAMPIREWARGAME/src/Cuentas/EstadisticaCuenta.java</file>
-            <file>file:/C:/Users/najma/OneDrive/Documents/NetBeansProjects/PROYECTO_VAMPIREWARGAME/src/Cuentas/Usuario.java</file>
-            <file>file:/C:/Users/najma/OneDrive/Documents/NetBeansProjects/PROYECTO_VAMPIREWARGAME/src/Interfaz/PanelTablero.java</file>
-            <file>file:/C:/Users/najma/OneDrive/Documents/NetBeansProjects/PROYECTO_VAMPIREWARGAME/src/Interfaz/VentanaJuego.java</file>
+            <file>file:/C:/Users/najma/OneDrive/Documents/NetBeansProjects/PROYECTO_VAMPIREWARGAME/src/Main/Main.java</file>
         </group>
     </open-files>
 </project-private>

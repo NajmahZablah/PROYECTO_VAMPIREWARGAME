@@ -11,7 +11,7 @@ package Modelo;
 public class HombreLobo extends Pieza {
 
     public HombreLobo(ColorJugador colorJugador, int vidaMaxima, int escudo, int ataque) {
-        super(colorJugador, TipoPieza.HOMBRE_LOBO, vidaMaxima, escudo, ataque);
+        super(colorJugador, TipoPieza.HOMBRE_LOBO, 5, 2, 5);
     }
 
     @Override
